@@ -7,6 +7,6 @@ dataFile = os.path.join(os.getcwd(), os.path.normpath("data/TRILEGAL.table"))	# 
 
 
 # Imports the TRILEGAL data file as a table
-def import():
+def load():
 	info = pd.read_table(dataFile, delim_whitespace=True)
 	return info
