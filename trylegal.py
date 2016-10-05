@@ -3,8 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-dataFile = os.path.join(os.getcwd(), os.path.normpath("data/TRILEGAL.dat"))
+dataFile = os.path.join(os.getcwd(), os.path.normpath("data/TRILEGAL.table"))	# File location
 
-def trImport():
-    trInfo = pd.read_table(dataFile, delim_whitespace=True)
-    return trInfo
+
+# Imports the TRILEGAL data file as a table
+def import():
+	info = pd.read_table(dataFile, delim_whitespace=True)
+	return info
