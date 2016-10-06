@@ -13,7 +13,13 @@ flux = 100		# flux
 
 # generate coordinate sets
 def distribute():
-	print "Oh happy days!"
+	reload(tr)
+	rand = []
+	data = tr.info_len()
+	for i in range(data):
+		value = np.random.uniform(0,size)
+		rand = np.array(np.append(rand, value))
+	return rand
 
 # place stars into the field
 def populate(center, snr, sigma, floor, size, seeing, flux):
@@ -57,6 +63,8 @@ def populate(center, snr, sigma, floor, size, seeing, flux):
 
     # Add the star into the image
     image += star
+    # Return the image
+    return image
 
 def plotfield():
     # Make a plot
@@ -65,14 +73,16 @@ def plotfield():
     plt.clf()
     plt.imshow(image,cmap='gray')
 
+def slice():
     # Show a cross section of the star in the image
     slice = image[y0,:]
     plt.figure(2)
     plt.clf()
     plt.plot(slice)
 
-    # Return the image
-    return image
-
 # run
-populate(center, snr, sigma, floor, size, seeing, flux)
+if __name__ == '__main__':
+	values = distribute()
+	print values
+	populate(center, snr, sigma, floor, size, seeing, flux)
+	#plotfield()
