@@ -10,3 +10,8 @@ dataFile = os.path.join(os.getcwd(), os.path.normpath("data/TRILEGAL.table"))	# 
 def load():
 	info = pd.read_table(dataFile, delim_whitespace=True)
 	return info
+
+# returns a specific comlumn (string)
+def infocolumn(column):
+	info = load()
+	return info[[column]]
