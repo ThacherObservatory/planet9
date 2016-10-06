@@ -27,9 +27,11 @@ def make_image():
 def coord_gen():
 	reload(tr)
 	rand = []
+	pbar = tqdm(desc = 'Randomizing coordinates', total = tr.info_len(), unit = 'whatever(s)')
 	for i in range(tr.info_len()):
 		value = np.random.uniform(0,size)
 		rand = np.array(np.append(rand, value))
+		pbar.update(1)
 	return rand
 
 # generate coordinate sets
