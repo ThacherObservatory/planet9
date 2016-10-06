@@ -1,15 +1,25 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from tqdm import tqdm
 import trylegal as tr
 
 # Variables
-center = None	# image center
 snr = None		# signal-to-noise ratio
 sigma = 20		# sigma
 floor = 500		# floor
 size = 2048		# image resolution
 seeing = 3		# seeing quality
 flux = 100		# flux
+
+def make_image():
+	# Make an image of given size with specified noise properties.
+	# Floor is bias, sigma is noise
+	image = np.random.normal(floor,sigma,(size,size))
+
+	# Create arrays that correspond to image pixels
+	x = np.arange(0, size, 1, float)
+	y = x[:,np.newaxis]
+	return image, x, y
 
 def coord_gen():
 	reload(tr)
@@ -21,23 +31,14 @@ def coord_gen():
 
 # generate coordinate sets
 def distribute():
-	x = coord_gen()
-	y = coord_gen()
-	print x
-	print y
+	x_rand = coord_gen()
+	y_rand = coord_gen()
+	return x_rand, y_rand
 
 # place stars into the field
-def add_star(loc, snr, sigma, floor, size, seeing, flux):
+def add_star(image, x, y, loc, snr, sigma, floor, seeing, flux):
 	# Interpret flux in terms of noise level
 	flux *= sigma
-
-	# Make an image of given size with specified noise properties.
-	# Floor is bias, sigma is noise
-	image = np.random.normal(floor,sigma,(size,size))
-
-	# Create arrays that correspond to image pixels
-	x = np.arange(0, size, 1, float)
-	y = x[:,np.newaxis]
 
 	# Decide where the star will go. If no input, place the star in the
 	# middle of the image
@@ -63,7 +64,6 @@ def add_star(loc, snr, sigma, floor, size, seeing, flux):
 	elif flux:
 		bright = flux
 		snr = flux/noise
-		print 'Total SNR = %.0f' % snr
 	star  = star/np.sum(star) * bright
 
 	# Add the star into the image
@@ -72,8 +72,21 @@ def add_star(loc, snr, sigma, floor, size, seeing, flux):
 	return image
 
 def make_field():
+	# create coordinate system
+	image, x, y = make_image()
+
+	# create random coordinates
+	x_rand, y_rand = distribute()
+
+	# progress bar
+	pbar = tqdm(desc = 'Creating image', total = tr.info_len(), leave = False, unit = 'star(s)')
+
+	# generate stars
 	for i in range(tr.info_len()):
-		add_star(loc, snr, sigma, floor, size, seeing, flux)
+		loc = [x_rand[[i]], y_rand[[i]]]
+		add_star(image, x, y, loc, snr, sigma, floor, seeing, flux)
+		pbar.update(1)
+	pbar.close()
 
 def plot_field():
 	# Make a plot
@@ -92,5 +105,5 @@ def slice_plot():
 # run
 if __name__ == '__main__':
 	make_field()
-	#plot_field()
-	#slice_plot()
+	plot_field()
+	slice_plot()
