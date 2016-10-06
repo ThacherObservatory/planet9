@@ -4,12 +4,11 @@ from tqdm import tqdm
 import trylegal as tr
 
 # Variables
-snr = 20		# signal-to-noise ratio
-sigma = 20		# sigma
-floor = 500		# floor
-size = 2048		# image resolution
-seeing = 3		# seeing quality
-flux = 100		# flux
+sigma = 20			# sigma
+floor = 500			# floor
+size = 2048			# image resolution
+seeing = 3			# seeing quality
+magn_0flux = 22.1	# observatory zeroflux magnitude
 
 def make_image():
 	# Make an image of given size with specified noise properties.
@@ -17,9 +16,12 @@ def make_image():
 	image = np.random.normal(floor,sigma,(size,size))
 
 	# Create arrays that correspond to image pixels
+	global x
+	global y
 	x = np.arange(0, size, 1, float)
 	y = x[:,np.newaxis]
-	return image, x, y
+
+	return image
 
 def coord_gen():
 	reload(tr)
@@ -35,18 +37,14 @@ def distribute():
 	y_rand = coord_gen()
 	return x_rand, y_rand
 
-# place stars into the field
-def add_star(image, x, y, loc, snr, sigma, floor, seeing, flux):
+def star_calc(loc, magn):
 	# Interpret flux in terms of noise level
+	flux = (10**(-0.4*(magn - magn_0flux))) # flux
 	flux *= sigma
 
-	# Decide where the star will go. If no input, place the star in the
-	# middle of the image
-	if loc is None:
-		x0 = y0 = size // 2
-	else:
-		x0 = loc[0]
-		y0 = loc[1]
+	# Decide where the star will go.
+	x0 = loc[0]
+	y0 = loc[1]
 
 	# This turns the star into a Gaussian
 	star = np.exp(-4*np.log(2) * ((x-x0)**2 + (y-y0)**2) / seeing**2)
@@ -56,19 +54,18 @@ def add_star(image, x, y, loc, snr, sigma, floor, seeing, flux):
 	npix = max(np.pi*(seeing)**2,1)
 
 	# Total noise within the star image
-	noise = np.sqrt(npix)*sigma
+	#noise = np.sqrt(npix)*sigma
 
-	# Adjust brightness of the star if SNR is specified in the inputs
-	if snr:
-		bright = noise*snr
-	elif flux:
-		bright = flux
-		snr = flux/noise
+	bright = flux
+	#snr = flux/noise
 	star  = star/np.sum(star) * bright
+	return star
 
+# place stars into the field
+def add_star(image, loc, magn):
+	star = star_calc(loc, magn)
 	# Add the star into the image
 	image += star
-
 	return image
 
 def plot_field(image):
@@ -79,7 +76,7 @@ def plot_field(image):
 	plt.imshow(image,cmap='gray')
 	plt.savefig("stars.png")
 
-def slice_plot(image,):
+def slice_plot(image):
 	# Show a cross section of the star in the image
 	slice = image[size//2,:]
 	plt.figure(2)
@@ -90,18 +87,19 @@ def slice_plot(image,):
 
 def make_field():
 	# create coordinate system
-	image, x, y = make_image()
+	image = make_image()
 
 	# create random coordinates
 	x_rand, y_rand = distribute()
 
 	# progress bar
-	pbar = tqdm(desc = 'Creating image', total = tr.info_len(), leave = False, unit = 'star(s)')
+	pbar = tqdm(desc = 'Creating image', total = tr.info_len(), unit = 'star(s)')
 
 	# generate stars
 	for i in range(tr.info_len()):
 		loc = [x_rand[[i]], y_rand[[i]]]
-		add_star(image, x, y, loc, snr, sigma, floor, seeing, flux)
+		magn = tr.info_col('V').iloc[i]['V']
+		add_star(image, loc, magn)
 		pbar.update(1)
 	pbar.close()
 
