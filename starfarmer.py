@@ -44,10 +44,11 @@ def populate(center, snr, sigma, floor, size, seeing, flux):
 		snr = flux/noise
 		print 'Total SNR = %.0f' % snr
 
-	star  = star/np.sum(star) * bright
+	star = star/np.sum(star) * bright
 
 	image += star
 
+def plotfield():
 	plt.ion()
 	plt.figure(1)
 	plt.clf()
