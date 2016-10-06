@@ -9,7 +9,7 @@ sigma = 20			# sigma
 floor = 500			# floor
 size = 2048			# image resolution
 seeing = 3			# seeing quality
-magn_0flux = 22.5	# observatory zeroflux magnitude
+magn_0flux = 22.5	# observatory V-band zero-flux magnitude
 
 def make_image():
 	# Make an image of given size with specified noise properties.
