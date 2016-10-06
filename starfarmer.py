@@ -42,7 +42,7 @@ def distribute():
 
 def star_calc(loc, magn):
 	# Interpret flux in terms of noise level
-	flux = (10**(-0.4*(magn - magn_0flux))) # flux
+	flux = 1800*(10**(-0.4*(magn - magn_0flux))) # flux
 	flux *= sigma
 
 	# Decide where the star will go.
