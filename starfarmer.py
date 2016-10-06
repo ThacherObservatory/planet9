@@ -10,6 +10,7 @@ floor = 500			# floor
 size = 2048			# image resolution
 seeing = 3			# seeing quality
 magn_0flux = 22.5	# observatory V-band zero-flux magnitude
+plate_scale = 0.61	# plate-scale, arcseconds per pixel
 
 def make_image():
 	# Make an image of given size with specified noise properties.
