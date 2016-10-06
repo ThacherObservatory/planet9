@@ -91,14 +91,14 @@ def make_field():
 
 	# create random coordinates
 	x_rand, y_rand = distribute()
-
+	tri_data = tr.info_col('V')
 	# progress bar
 	pbar = tqdm(desc = 'Creating image', total = tr.info_len(), unit = 'star(s)')
 
 	# generate stars
 	for i in range(tr.info_len()):
 		loc = [x_rand[[i]], y_rand[[i]]]
-		magn = tr.info_col('V').iloc[i]['V']
+		magn = tri_data.iloc[i]['V']
 		add_star(image, loc, magn)
 		pbar.update(1)
 	pbar.close()
