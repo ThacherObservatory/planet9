@@ -103,7 +103,8 @@ def make_field():
 		pbar.update(1)
 	pbar.close()
 
-	# render image
+	# render image and save it
+	fits.writeto('stars.fits', image)
 	plot_field(image)
 	slice_plot(image)
 
