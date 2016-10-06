@@ -4,7 +4,7 @@ from tqdm import tqdm
 import trylegal as tr
 
 # Variables
-snr = None		# signal-to-noise ratio
+snr = 20		# signal-to-noise ratio
 sigma = 20		# sigma
 floor = 500		# floor
 size = 2048		# image resolution
@@ -71,6 +71,23 @@ def add_star(image, x, y, loc, snr, sigma, floor, seeing, flux):
 
 	return image
 
+def plot_field(image):
+	# Make a plot
+	plt.ion()
+	plt.figure(1)
+	plt.clf()
+	plt.imshow(image,cmap='gray')
+	plt.savefig("stars.png")
+
+def slice_plot(image,):
+	# Show a cross section of the star in the image
+	slice = image[size//2,:]
+	plt.figure(2)
+	plt.clf()
+	plt.xlim(size)
+	plt.gca().invert_xaxis()
+	plt.plot(slice)
+
 def make_field():
 	# create coordinate system
 	image, x, y = make_image()
@@ -88,22 +105,10 @@ def make_field():
 		pbar.update(1)
 	pbar.close()
 
-def plot_field():
-	# Make a plot
-	plt.ion()
-	plt.figure(1)
-	plt.clf()
-	plt.imshow(image,cmap='gray')
-
-def slice_plot():
-	# Show a cross section of the star in the image
-	slice = image[y0,:]
-	plt.figure(2)
-	plt.clf()
-	plt.plot(slice)
+	# render image
+	plot_field(image)
+	slice_plot(image)
 
 # run
 if __name__ == '__main__':
 	make_field()
-	plot_field()
-	slice_plot()
