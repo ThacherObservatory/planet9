@@ -50,26 +50,41 @@ def star_calc(loc, magn):
 	x0 = loc[0]
 	y0 = loc[1]
 
+	# create a mini frame for the star
+	frame_width = 10*sigma
+	x_frame = np.arange(0, frame_width, 1, float)
+	y_frame = x_frame[:,np.newaxis]
+	x_center = frame_width/2
+	y_center = frame_width/2
+
 	# This turns the star into a Gaussian
-	star = np.exp(-4*np.log(2) * ((x-x0)**2 + (y-y0)**2) / seeing**2)
+	star = np.exp(-4*np.log(2) * ((x_frame-x_center)**2 + (y_frame-y_center)**2) / seeing**2)
 
 	# This is approximately how many pixels the star covers (needed
 	# to compute the total signal to noise)
-	npix = max(np.pi*(seeing)**2,1)
+	#npix = max(np.pi*(seeing)**2,1)
 
 	# Total noise within the star image
 	#noise = np.sqrt(npix)*sigma
 
-	bright = flux
 	#snr = flux/noise
-	star  = star/np.sum(star) * bright
+	star  = star/np.sum(star) * flux
+
+	# reseize frame
+	x_frame_pos = x0 - (frame_width/2)
+	y_frame_pos = y0 - (frame_width/2)
+	full_frame = np.empty([size, size])
+	full_frame[x_frame_pos:(x_frame_pos + star.shape[0]), y_frame_pos:(y_frame_pos + star.shape[1])] += star
+	star = full_frame
 	return star
 
 # place stars into the field
 def add_star(image, loc, magn):
 	star = star_calc(loc, magn)
+
 	# Add the star into the image
 	image += star
+
 	return image
 
 def plot_field(image):
@@ -96,6 +111,7 @@ def make_field():
 	# create random coordinates
 	x_rand, y_rand = distribute()
 	tri_data = tr.info_col('V')
+
 	# progress bar
 	pbar = tqdm(desc = 'Creating image', total = tr.info_len(), unit = 'star(s)')
 
@@ -108,7 +124,7 @@ def make_field():
 	pbar.close()
 
 	# render image and save it
-	fits.writeto('stars.fits', image)
+	fits.writeto('stars.fits', image, clobber = True)
 	plot_field(image)
 	slice_plot(image)
 
