@@ -53,7 +53,7 @@ def star_calc(loc, magn):
 	y0 = loc[1]
 
 	# This turns the star into a Gaussian, only in a star_width*star_width square
-	star = np.exp(-4*np.log(2) * (((x[x0-(star_width/2):x0+(star_width/2):1])-x0)**2 + ((y[y0-(star_width/2):y0+(star_width/2):1])-y0)**2) / seeing**2)
+	star = np.exp(-4*np.log(2) * (((x[x0-(star_width/2):x0+(star_width/2),])-x0)**2 + ((y[y0-(star_width/2):y0+(star_width/2),])-y0)**2) / seeing**2)
 
 	# This is approximately how many pixels the star covers (needed
 	# to compute the total signal to noise)
@@ -63,7 +63,10 @@ def star_calc(loc, magn):
 	#noise = np.sqrt(npix)*sigma
 
 	#snr = flux/noise
-	star  = star/np.sum(star) * flux
+	star = star/np.sum(star) * flux
+
+	# Poisson noise
+	star = np.random.poisson(star)
 
 	return star
 
@@ -76,8 +79,12 @@ def add_star(image, loc, magn):
 	y0 = loc[1]
 
 	# Add the star into the image
-	image[x0:x0+star.shape[0], y0:y0+star.shape[1]] += star[]
-
+	target = image[x0-(star.shape[0]/2):x0+(star.shape[0]/2), y0-(star.shape[1]/2):y0+(star.shape[1]/2)]
+	if target.shape != star.shape:
+		#target += star[(target.shape[0]), (target.shape[1]),]
+		print "Star out of bounds!"
+	else:
+		target += star
 	return image
 
 def plot_field(image):
@@ -86,6 +93,7 @@ def plot_field(image):
 	plt.figure(1)
 	plt.clf()
 	plt.imshow(image,cmap='gray')
+	plt.gca().invert_yaxis()
 	plt.savefig("stars.png")
 
 def slice_plot(image):
@@ -95,7 +103,6 @@ def slice_plot(image):
 	plt.clf()
 	plt.xlim(size)
 	plt.gca().invert_xaxis()
-	plt.gca().invert_yaxis()
 	plt.plot(slice)
 
 def make_field():
