@@ -63,7 +63,10 @@ def star_calc(loc, magn):
 	#noise = np.sqrt(npix)*sigma
 
 	#snr = flux/noise
-	star  = star/np.sum(star) * flux
+	star = star/np.sum(star) * flux
+
+	# Poisson noise
+	star = np.random.poisson(star)
 
 	return star
 
@@ -76,8 +79,11 @@ def add_star(image, loc, magn):
 	y0 = loc[1]
 
 	# Add the star into the image
-	image[x0:x0+star.shape[0], y0:y0+star.shape[1]] += star[]
-
+	target = image[x0:x0+star.shape[0], y0:y0+star.shape[1]]
+	if target.shape == star.shape:
+		target += star
+	else:
+		target += star[(target.shape[0]-1), (target.shape[1]-1)]
 	return image
 
 def plot_field(image):
@@ -86,6 +92,7 @@ def plot_field(image):
 	plt.figure(1)
 	plt.clf()
 	plt.imshow(image,cmap='gray')
+	plt.gca().invert_yaxis()
 	plt.savefig("stars.png")
 
 def slice_plot(image):
@@ -95,7 +102,6 @@ def slice_plot(image):
 	plt.clf()
 	plt.xlim(size)
 	plt.gca().invert_xaxis()
-	plt.gca().invert_yaxis()
 	plt.plot(slice)
 
 def make_field():
