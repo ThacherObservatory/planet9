@@ -5,12 +5,14 @@ import trylegal as tr
 from astropy.io import fits
 
 # Variables
-sigma = 20			# sigma
-floor = 500			# floor
-size = 2048			# image resolution
-seeing = 3			# seeing quality
-magn_0flux = 22.5	# observatory V-band zero-flux magnitude
-plate_scale = 0.61	# plate-scale, arcseconds per pixel
+sigma = 20				# sigma
+floor = 500				# floor
+size = 2048				# image resolution
+seeing = 3				# seeing quality
+magn_0flux = 22.5		# observatory V-band zero-flux magnitude
+plate_scale = 0.61		# plate-scale, arcseconds per pixel
+star_width = 10*sigma	# range of star gaussian
+exposure_time = 1800	# exposure time in seconds
 
 def make_image():
 	# Make an image of given size with specified noise properties.
@@ -43,22 +45,15 @@ def distribute():
 
 def star_calc(loc, magn):
 	# Interpret flux in terms of noise level
-	flux = 1800*(10**(-0.4*(magn - magn_0flux))) # flux
+	flux = exposure_time*(10**(-0.4*(magn - magn_0flux))) # flux
 	flux *= sigma
 
-	# Decide where the star will go.
+	# Decide where the star will go
 	x0 = loc[0]
 	y0 = loc[1]
 
-	# create a mini frame for the star
-	frame_width = 10*sigma
-	x_frame = np.arange(0, frame_width, 1, float)
-	y_frame = x_frame[:,np.newaxis]
-	x_center = frame_width/2
-	y_center = frame_width/2
-
-	# This turns the star into a Gaussian
-	star = np.exp(-4*np.log(2) * ((x_frame-x_center)**2 + (y_frame-y_center)**2) / seeing**2)
+	# This turns the star into a Gaussian, only in a star_width*star_width square
+	star = np.exp(-4*np.log(2) * (((x[x0-(star_width/2):x0+(star_width/2):1])-x0)**2 + ((y[y0-(star_width/2):y0+(star_width/2):1])-y0)**2) / seeing**2)
 
 	# This is approximately how many pixels the star covers (needed
 	# to compute the total signal to noise)
@@ -70,20 +65,18 @@ def star_calc(loc, magn):
 	#snr = flux/noise
 	star  = star/np.sum(star) * flux
 
-	# reseize frame
-	x_frame_pos = x0 - (frame_width/2)
-	y_frame_pos = y0 - (frame_width/2)
-	full_frame = np.empty([size, size])
-	full_frame[x_frame_pos:(x_frame_pos + star.shape[0]), y_frame_pos:(y_frame_pos + star.shape[1])] += star
-	star = full_frame
 	return star
 
 # place stars into the field
 def add_star(image, loc, magn):
 	star = star_calc(loc, magn)
 
+	# Decide where the star will go
+	x0 = loc[0]
+	y0 = loc[1]
+
 	# Add the star into the image
-	image += star
+	image[x0:x0+star.shape[0], y0:y0+star.shape[1]] += star[]
 
 	return image
 
@@ -102,6 +95,7 @@ def slice_plot(image):
 	plt.clf()
 	plt.xlim(size)
 	plt.gca().invert_xaxis()
+	plt.gca().invert_yaxis()
 	plt.plot(slice)
 
 def make_field():
