@@ -56,14 +56,6 @@ def star_calc(loc, magn):
 	#star = np.exp(-4*np.log(2) * (((x[x0-(star_width/2):x0+(star_width/2),])-x0)**2 + ((y[y0-(star_width/2):y0+(star_width/2),])-y0)**2) / seeing**2)
 	star = np.exp(-4*np.log(2) * ((x-x0)**2 + (y-y0)**2) / seeing**2)
 
-	# This is approximately how many pixels the star covers (needed
-	# to compute the total signal to noise)
-	#npix = max(np.pi*(seeing)**2,1)
-
-	# Total noise within the star image
-	#noise = np.sqrt(npix)*sigma
-
-	#snr = flux/noise
 	star = star/np.sum(star) * flux
 
 	# Poisson noise
@@ -80,13 +72,9 @@ def add_star(image, loc, magn):
 	y0 = loc[1]
 
 	# Add the star into the image
-	"""target = image[x0-(star.shape[0]/2):x0+(star.shape[0]/2), y0-(star.shape[1]/2):y0+(star.shape[1]/2)]
-	if target.shape != star.shape:
-		#target += star[(target.shape[0]), (target.shape[1]),]
-		print "Star out of bounds!"
-	else:
-		target += star"""
-	image += star
+	target = image[x0-(star.shape[0]/2):x0+(star.shape[0]/2), y0-(star.shape[1]/2):y0+(star.shape[1]/2)]
+
+	image += star[(target.shape[0]), (target.shape[1]),]
 	return image
 
 def plot_field(image):
@@ -122,7 +110,7 @@ def make_field():
 	for i in range(tr.info_len()):
 		loc = [x_rand[[i]], y_rand[[i]]]
 		magn = tri_data.iloc[i]['V']
-		add_star(image, loc, magn)
+		image = add_star(image, loc, magn)
 		pbar.update(1)
 	pbar.close()
 
