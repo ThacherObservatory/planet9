@@ -29,7 +29,7 @@ def make_noise_frame(size=2048,bias=500,readnoise=20,background=21.3,mzp=22.5,ex
     Need to put background noise in here
     """
     # make image with bias and readnoise
-    readimage = np.random.normal(bias,sigma,(size,size))
+    readimage = np.random.normal(bias,readnoise,(size,size))
 
     # Get background flux from mags per square arcsec
     bgflux = exptime*(10**(-0.4*(background - mzp)))
@@ -145,6 +145,7 @@ def add_star(starframe, star, loc=[0,0], mag=0, mzp=22.5, exptime=1800.0):
     try:
         starframe[startx:stopx,starty:stopy] += star_int[xb:xe,yb:ye]
     except:
+        print 'Failed star!!'
         pass
     return starframe
 
