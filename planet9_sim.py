@@ -126,7 +126,7 @@ def add_star(starframe, star, loc=[0,0], mag=0, mzp=22.5, exptime=1800.0):
         xb = 0
     stopx = min(x0+xs/2,xf)
     if stopx == xf:
-        xe = x0 + xs/2 - xf + 1
+        xe = stopx-startx 
     else:
         xe = xs
         
@@ -137,7 +137,7 @@ def add_star(starframe, star, loc=[0,0], mag=0, mzp=22.5, exptime=1800.0):
         yb = 0
     stopy  = min(y0+ys/2,yf)
     if stopy == yf:
-        ye = y0 + ys/2 - yf + 1
+        ye = stopy-starty 
     else:
         ye = ys
   
@@ -145,7 +145,11 @@ def add_star(starframe, star, loc=[0,0], mag=0, mzp=22.5, exptime=1800.0):
     try:
         starframe[startx:stopx,starty:stopy] += star_int[xb:xe,yb:ye]
     except:
-        print 'Failed star!!'
+        print startx,stopx,stopx-startx
+        print starty,stopy,stopy-starty
+        print xb,xe,xe-xb
+        print yb,ye,ye-yb
+        pdb.set_trace()
         pass
     return starframe
 
@@ -174,7 +178,7 @@ def slice_plot(image):
 	plt.plot(slice)
 
         
-def make_field(size=2048,x=[100],y=[100],oversamp=10,bias=500,readnoise=20,seeing=3.0,plate_scale=0.61,width=10.0,
+def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=3.0,plate_scale=0.61,width=10.0,
                background=21.3,mzp=22.5,exptime=1800.0,write=False,
                p9pos=[1000,1000],p9mag=23.0):
     """
@@ -189,7 +193,9 @@ def make_field(size=2048,x=[100],y=[100],oversamp=10,bias=500,readnoise=20,seein
     ys = np.shape(noiseframe)[1]
     
     # create random coordinates
-#    x, y = distribute(size=size*oversamp)
+    if x == None or y == None:
+        x, y = distribute(size=size*oversamp)
+        
     star = make_star(seeing=seeing,plate_scale=plate_scale/oversamp,width=width)
 
     tri_data = tr.info_col('V')
