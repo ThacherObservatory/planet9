@@ -29,7 +29,7 @@ def planet_speed(t,ra=90,dec=20,a=800):
 
     #calculates width and height of planet 9's movement.
     #Width and height are the distance from the ceter to poles, not absolute width / height
-    width = 1.00/(Dis*np.pi*180*3600)
+    width = (3600*180)/(Dis*np.pi)
     height = np.sin(Dec)*width
 
     #takes the derivative of x and y movement (parabolic equations)
