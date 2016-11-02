@@ -3,29 +3,38 @@
 Created on Tue Nov  1 15:07:13 2016
 
 @author: Liam
+
+02Nov2016 (jswift): Eliminated "math" module. 
+                    Created default keywords instead of defining values internally
+                    Adjusted number of days in a year to 365.2422
 """
 #Planet 9 Location Finder
 
 import numpy as np
-import math
-
 
 #given summer solsace 2016 is 194 days from January 1 2017
 
-def planet_speed(t):
-    #define Right Accension, Declination, Distance to planet 9 (au) and Days from January 1
-    RA = np.radians(90.0)
-    Dec = np.radians(20.0)
-    Dis = 800
+def planet_speed(t,ra=90,dec=20,a=800):
+    """
+    Return proper motion of planet for given input parameters
+    t: day of year
+    ra: Right Ascencion in degrees
+    dec: Declination in degrees
+    a: Semi-major axis of planet (not accounting for Earth distance).
+    """
+    # Wrangle input variables
+    RA = np.radians(np.float(ra))
+    Dec = np.radians(np.float(dec))
+    Dis = np.float(a)
 
     #calculates width and height of planet 9's movement.
     #Width and height are the distance from the ceter to poles, not absolute width / height
-    width = 1.00/Dis/math.pi*180*3600
-    height = math.sin(Dec)*width
+    width = 1.00/(Dis*np.pi*180*3600)
+    height = np.sin(Dec)*width
 
     #takes the derivative of x and y movement (parabolic equations)
-    x_deriv = width*2*math.pi/365.5*math.cos((t+195)*2*math.pi/365.5)
-    y_deriv = -height*2*math.pi/365.5*math.sin((t+195)*2*math.pi/365.5)
+    x_deriv = width*2*np.pi/365.2422*np.cos((t+195)*2*np.pi/365.2422)
+    y_deriv = -height*2*np.pi/365.2422*np.sin((t+195)*2*np.pi/365.2422)
 
     #Calculates speed of planet 9 in Arcsecconds / min
     speed = (((x_deriv)**2+(y_deriv)**(2))**(.500))/24
