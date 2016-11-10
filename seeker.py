@@ -39,7 +39,7 @@ def loadImage(filename,plot=True):
 
 def findSources(filename,plot=True):
 	image,header,med,sig = loadImage(filename,plot=plot)
-	sources = daofind(image - med, fwhm=3.0/.61, threshold=2*sig,sharphi=.6)
+	sources = daofind(image - med, fwhm=3.5/.61, threshold=2*sig,sharplo=.4)
 	positions = (sources['xcentroid'], sources['ycentroid'])
 	apertures = CircularAperture(positions, r=4.)
 	#norm = ImageNormalize(stretch=SqrtStretch())
