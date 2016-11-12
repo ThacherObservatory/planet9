@@ -180,7 +180,7 @@ def slice_plot(image):
         
 def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=3.0,plate_scale=0.61,width=10.0,
                background=21.3,mzp=22.5,exptime=1800.0,write=False,
-               p9pos=[1000,1000],p9mag=23.0):
+               p9pos=[1000,1000],p9mag=23.0,plot=False):
     """
     Make a field of stars with realistic noise properties
     """
@@ -229,7 +229,9 @@ def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=
     # render image and save it
     if write:
         fits.writeto('stars.fits', image, clobber = True)
-    plot_field(image,write=write)
+
+    if plot:
+        plot_field(image,write=write)
 
     return image
 
@@ -280,8 +282,9 @@ def planet9_sequence(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
                            write=write,p9pos=[p9_x[i],p9_y[i]],p9mag=p9mag)
 
         # write image to FITS
-        
+        fits.writeto(filename+'_'+str(i+1)+'.fits', image, clobber = True)
     return
+
 
         
 # run
