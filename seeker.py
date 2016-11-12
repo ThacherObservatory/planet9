@@ -56,20 +56,31 @@ def testRecovery(p9mag=10.0,seeing=3.5,threshold=2.0,
                  niter=10):
 
         i = 0
+        r = 0
         for i in range(niter):
             p9s.planet9_sequence(readnoise=2,p9mag=15.0,nimage=1,filename='test')
             sources = findSources('test_1.fits',threshold=threshold,seeing=seeing,sharplo=sharplo,
                                     roundlo=roundlo,roundhi=roundhi,plot=False)
 
             d = np.sqrt((1024-sources['xcentroid'])**2 + (1024-sources['ycentroid'])**2)
+
+            xrand,yrand = np.random.uniform(0,2048,2)
+
+            drand = np.sqrt((xrand-sources['xcentroid'])**2 + (yrand-sources['ycentroid'])**2)
+        
+
             # maximum distance is width at half max
             dmax = seeing/(2*0.61)
 
             if np.min(d) < dmax:
                 i += 1
+            if np.min(drand) < dmax:
+                r += 1
 
         percent = np.float(i)/np.float(niter) * 100.0
-        return percent
+        control = np.float(r)/np.float(niter) * 100.0
+
+        return percent, control
         
         
 def runTest(p9mag=[10,23],seeing=3.5,threshold=2.0,
@@ -80,16 +91,16 @@ def runTest(p9mag=[10,23],seeing=3.5,threshold=2.0,
 
         percent = []
         for mag in mags:
-                p = testRecovery(p9mag=mag,niter=niter)
+                p,c = testRecovery(p9mag=mag,niter=niter)
                 percent = np.append(percent,p)
+                control = np.append(percent,c)
 
         plot_params()
         plt.figure(99)
         plt.plot(mags,percent,'b-')
+        plt.plot(mags,control,'r--')
         plt.xlabel('V Band Magnitude',fontsize=17)
         plt.ylabel('Recovery Probability',fontsize=17)
         plt.savefig('Recovery.png',dpi=300)
 
-        return
-
-
+        return mags, percent, control
