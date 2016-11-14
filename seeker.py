@@ -12,7 +12,7 @@ from astropy.visualization.mpl_normalize import ImageNormalize
 import robust as rb
 import planet9_sim as p9s
 from plot_params import *
-import pdb
+import pdb,pickle
 
 #path = "/Users/nickedwards/Desktop/"
 #filename = path + "stars.fits"
@@ -88,7 +88,7 @@ def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0,
 			plt.ion()
 			plt.figure(987)
 			plt.clf()
-		plt.imshow(image, vmin=med - 2 * sig, vmax=med + 5 *
+		        plt.imshow(image, vmin=med - 2 * sig, vmax=med + 5 *
 					   sig, cmap='gray', interpolation='none')
 			apertures.plot(color='cyan', lw=1.5, alpha=0.5)
 			plt.plot([1024], [1024], 'r+', ms=12)
@@ -124,4 +124,7 @@ def runTest(p9mag=[10, 23], seeing=3.5, threshold=2.0,
 	plt.ylabel('Recovery Probability', fontsize=17)
 	plt.savefig('Recovery.png', dpi=300)
 
+        dict = {'mags':mags,'percent':percent,'control':control}
+        pickle.dump(dict, open("Recovery.p", "wb"))
+        
 	return mags, percent, control
