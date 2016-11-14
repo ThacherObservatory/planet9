@@ -110,10 +110,11 @@ def runTest(p9mag=[10,23],seeing=3.5,threshold=2.0,
         mags = (np.arange(p9mag[0],p9mag[1]+1)).astype('float')
 
         percent = []
+        control = []
         for mag in mags:
                 p,c = testRecovery(p9mag=mag,niter=niter,debug=debug)
                 percent = np.append(percent,p)
-                control = np.append(percent,c)
+                control = np.append(control,c)
 
         plot_params()
         plt.figure(99)
