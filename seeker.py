@@ -12,6 +12,7 @@ from astropy.visualization.mpl_normalize import ImageNormalize
 import robust as rb
 import planet9_sim as p9s
 from plot_params import *
+import pdb
 
 #path = "/Users/nickedwards/Desktop/"
 #filename = path + "stars.fits"
@@ -53,16 +54,19 @@ def findSources(filename,plot=True,pixscale=0.61,seeing=3.0,threshold=2.0,
 
 def testRecovery(p9mag=10.0,seeing=3.5,threshold=2.0,
                  sharplo=0.2,sharphi=1.0,roundlo=-0.5,roundhi=0.5,
-                 niter=10):
+                 niter=10,debug=False):
 
         i = 0
         r = 0
         for i in range(niter):
-            p9s.planet9_sequence(readnoise=2,p9mag=15.0,nimage=1,filename='test')
+            p9s.planet9_sequence(readnoise=2,p9mag=p9mag,nimage=1,filename='test')
             sources = findSources('test_1.fits',threshold=threshold,seeing=seeing,sharplo=sharplo,
                                     roundlo=roundlo,roundhi=roundhi,plot=False)
 
-            d = np.sqrt((1024-sources['xcentroid'])**2 + (1024-sources['ycentroid'])**2)
+            positions = (sources['xcentroid'], sources['ycentroid'])
+	    apertures = CircularAperture(positions, r=seeing/0.61)
+
+            d = np.sqrt((1024.0-sources['xcentroid'])**2 + (1024.0-sources['ycentroid'])**2)
 
             xrand,yrand = np.random.uniform(0,2048,2)
 
@@ -77,21 +81,37 @@ def testRecovery(p9mag=10.0,seeing=3.5,threshold=2.0,
             if np.min(drand) < dmax:
                 r += 1
 
+
+            if debug:
+                image,header,med,sig = loadImage('test_1.fits',plot=False)
+
+                plt.ion()
+                plt.figure(987)
+                plt.clf()
+                plt.imshow(image,vmin=med-2*sig,vmax=med+5*sig,cmap='gray',interpolation='none')
+                apertures.plot(color='cyan', lw=1.5, alpha=0.5)
+                plt.plot([1024],[1024],'r+',ms=12)
+                plt.xlim(924,1124)
+                plt.ylim(924,1124)
+                plt.show()
+                pdb.set_trace()
+        
         percent = np.float(i)/np.float(niter) * 100.0
         control = np.float(r)/np.float(niter) * 100.0
 
         return percent, control
         
-        
+
+
 def runTest(p9mag=[10,23],seeing=3.5,threshold=2.0,
             sharplo=0.2,sharphi=1.0,roundlo=-0.5,roundhi=0.5,
-            niter=100):
+            niter=100,debug=False):
 
         mags = (np.arange(p9mag[0],p9mag[1]+1)).astype('float')
 
         percent = []
         for mag in mags:
-                p,c = testRecovery(p9mag=mag,niter=niter)
+                p,c = testRecovery(p9mag=mag,niter=niter,debug=debug)
                 percent = np.append(percent,p)
                 control = np.append(percent,c)
 
