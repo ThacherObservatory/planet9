@@ -55,8 +55,8 @@ def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0,
 				 sharplo=0.2, sharphi=1.0, roundlo=-0.5, roundhi=0.5,
 				 niter=10, debug=False):
 
-	i = 0
-	r = 0
+	found = 0
+	rand = 0
 	for i in range(niter):
 		p9s.planet9_sequence(readnoise=2, p9mag=p9mag,
 							 nimage=1, filename='test')
@@ -78,9 +78,10 @@ def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0,
 		dmax = seeing / (2 * 0.61)
 
 		if np.min(d) < dmax:
-			i += 1
+                        print 
+			found += 1
 		if np.min(drand) < dmax:
-			r += 1
+			rand += 1
 
 		if debug:
 			image, header, med, sig = loadImage('test_1.fits', plot=False)
@@ -97,8 +98,8 @@ def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0,
 			plt.show()
 			pdb.set_trace()
 
-	percent = np.float(i) / np.float(niter) * 100.0
-	control = np.float(r) / np.float(niter) * 100.0
+	percent = np.float(found) / np.float(niter) * 100.0
+	control = np.float(rand) / np.float(niter) * 100.0
 
 	return percent, control
 
