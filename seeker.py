@@ -104,7 +104,7 @@ def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0,exptime=1800.0, readnoise
 	return percent, control
 
 
-def runTest(p9mag=[10, 23], seeing=3.5, threshold=2.0,
+def runTest(p9mag=[10, 23], seeing=3.5, threshold=2.0, exptime=1800.0, readnoise=2.0,
 			sharplo=0.2, sharphi=1.0, roundlo=-0.5, roundhi=0.5,
 			niter=100, debug=False):
 
@@ -113,7 +113,10 @@ def runTest(p9mag=[10, 23], seeing=3.5, threshold=2.0,
 	percent = []
 	control = []
 	for mag in mags:
-		p, c = testRecovery(p9mag=mag, niter=niter, debug=debug)
+		p, c = testRecovery(p9mag=mag, niter=niter, debug=debug,
+                                    exptime=exptime, readnoise=readnoise,
+                                    roundhi=roundhi, roundlo=roundlo, sharphi=sharphi,
+                                    sharplo=sharplo, threshold=threshold, seeing=seeing)
 		percent = np.append(percent, p)
 		control = np.append(control, c)
 
