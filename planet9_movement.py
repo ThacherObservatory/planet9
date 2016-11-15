@@ -65,7 +65,7 @@ def find_cadence(t,ra=90,dec=20,a=800,m=10):
     
     
     #Defines cadence in hours
-    cadence = 10 / (speed)
+    cadence = 10 / (speed*24)
     
     return cadence
     
