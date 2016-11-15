@@ -51,14 +51,14 @@ def findSources(filename, plot=True, pixscale=0.61, seeing=3.0, threshold=2.0,
 	return sources
 
 
-def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0,
+def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0,exptime=1800.0, readnoise=2.0,
 				 sharplo=0.2, sharphi=1.0, roundlo=-0.5, roundhi=0.5,
 				 niter=10, debug=False):
 
 	found = 0
 	rand = 0
 	for i in range(niter):
-		p9s.planet9_sequence(readnoise=2, p9mag=p9mag,
+		p9s.planet9_sequence(readnoise=2, p9mag=p9mag,exptime=exptime ,readnoise=readnoise,
 							 nimage=1, filename='test')
 		sources = findSources('test_1.fits', threshold=threshold, seeing=seeing, sharplo=sharplo,
 							  roundlo=roundlo, roundhi=roundhi, plot=False)
