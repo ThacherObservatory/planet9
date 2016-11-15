@@ -58,7 +58,7 @@ def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0,exptime=1800.0, readnoise
 	found = 0
 	rand = 0
 	for i in range(niter):
-		p9s.planet9_sequence(readnoise=2, p9mag=p9mag,exptime=exptime ,readnoise=readnoise,
+		p9s.planet9_sequence(p9mag=p9mag,exptime=exptime ,readnoise=readnoise,
 							 nimage=1, filename='test')
 		sources = findSources('test_1.fits', threshold=threshold, seeing=seeing, sharplo=sharplo,
 							  roundlo=roundlo, roundhi=roundhi, plot=False)
