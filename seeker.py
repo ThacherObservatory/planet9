@@ -51,14 +51,14 @@ def findSources(filename, plot=True, pixscale=0.61, seeing=3.0, threshold=2.0,
 	return sources
 
 
-def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0,
+def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0,exptime=1800.0, readnoise=2.0,
 				 sharplo=0.2, sharphi=1.0, roundlo=-0.5, roundhi=0.5,
 				 niter=10, debug=False):
 
-	i = 0
-	r = 0
+	found = 0
+	rand = 0
 	for i in range(niter):
-		p9s.planet9_sequence(readnoise=2, p9mag=p9mag,
+		p9s.planet9_sequence(p9mag=p9mag,exptime=exptime ,readnoise=readnoise,
 							 nimage=1, filename='test')
 		sources = findSources('test_1.fits', threshold=threshold, seeing=seeing, sharplo=sharplo,
 							  roundlo=roundlo, roundhi=roundhi, plot=False)
@@ -78,9 +78,10 @@ def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0,
 		dmax = seeing / (2 * 0.61)
 
 		if np.min(d) < dmax:
-			i += 1
+                        print 
+			found += 1
 		if np.min(drand) < dmax:
-			r += 1
+			rand += 1
 
 		if debug:
 			image, header, med, sig = loadImage('test_1.fits', plot=False)
@@ -97,13 +98,13 @@ def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0,
 			plt.show()
 			pdb.set_trace()
 
-	percent = np.float(i) / np.float(niter) * 100.0
-	control = np.float(r) / np.float(niter) * 100.0
+	percent = np.float(found) / np.float(niter) * 100.0
+	control = np.float(rand) / np.float(niter) * 100.0
 
 	return percent, control
 
 
-def runTest(p9mag=[10, 23], seeing=3.5, threshold=2.0,
+def runTest(p9mag=[10, 23], seeing=3.5, threshold=2.0, exptime=1800.0, readnoise=2.0,
 			sharplo=0.2, sharphi=1.0, roundlo=-0.5, roundhi=0.5,
 			niter=100, debug=False):
 
@@ -112,7 +113,10 @@ def runTest(p9mag=[10, 23], seeing=3.5, threshold=2.0,
 	percent = []
 	control = []
 	for mag in mags:
-		p, c = testRecovery(p9mag=mag, niter=niter, debug=debug)
+		p, c = testRecovery(p9mag=mag, niter=niter, debug=debug,
+                                    exptime=exptime, readnoise=readnoise,
+                                    roundhi=roundhi, roundlo=roundlo, sharphi=sharphi,
+                                    sharplo=sharplo, threshold=threshold, seeing=seeing)
 		percent = np.append(percent, p)
 		control = np.append(control, c)
 
