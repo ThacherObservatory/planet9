@@ -105,11 +105,12 @@ def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0, exptime=1800.0, readnois
 	return percent, control
 
 
-def runTest(p9mag=[10, 23], seeing=3.5, threshold=2.0, exptime=1800.0, readnoise=2.0,
+def runTest(p9mag=[10, 23], nstep=10, seeing=3.5, threshold=2.0, exptime=1800.0, readnoise=2.0,
 			sharplo=0.2, sharphi=1.0, roundlo=-0.5, roundhi=0.5,
 			niter=100, debug=False):
 
-	mags = (np.arange(p9mag[0], p9mag[1] + 1)).astype('float')
+        mags = np.linspace(p9mag[0],p9mag[1],nstep)
+	#mags = (np.arange(p9mag[0], p9mag[1] + 1)).astype('float')
 
 	percent = []
 	control = []
@@ -125,6 +126,8 @@ def runTest(p9mag=[10, 23], seeing=3.5, threshold=2.0, exptime=1800.0, readnoise
 	plt.figure(99)
 	plt.plot(mags, percent, 'b-')
 	plt.plot(mags, control, 'r--')
+        plt.ylim(0,110)
+        plt.xlim(p9mag[0],p9mag[1])
 	plt.xlabel('V Band Magnitude', fontsize=17)
 	plt.ylabel('Recovery Probability', fontsize=17)
 	plt.savefig('Recovery.png', dpi=300)
