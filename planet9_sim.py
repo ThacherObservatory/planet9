@@ -158,7 +158,6 @@ def plot_field(image, siglo=2.0, sighi=5.0, write=False):
 	# Make a plot
 		med = np.median(image)
 		sig = rb.std(image)
-	plt.ion()
 	plt.figure(1)
 	plt.clf()
 	plt.imshow(image,vmin=med-siglo*sig,vmax=med+sighi*sig,cmap='gray',interpolation='none')
