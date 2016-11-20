@@ -5,8 +5,7 @@ from tqdm import tqdm
 import trylegal as tr
 from astropy.io import fits
 from rebin import rebin
-import pdb
-import os
+import pdb,os
 import robust as rb
 
 # Variables
@@ -71,13 +70,12 @@ def coord_gen(size=2048):
 	"""
 	Generates uniformly random integers between 0 and size
 	"""
-	reload(tr)
 	rand = []
 # pbar = tqdm(desc = 'Randomizing coordinates', total = tr.info_len(),
 # unit = 'whatever(s)')
 	for i in range(tr.info_len()):
 		value = np.random.randint(0, size)
-	rand = np.array(np.append(rand, value))
+	        rand = np.append(rand, value)
 #	pbar.update(1)
 	return rand
 
@@ -124,6 +122,7 @@ def add_star(starframe, star, loc=[0, 0], mag=0, mzp=22.5, exptime=1800.0):
 		xb = xs / 2 - x0
 	else:
 		xb = 0
+
 	stopx = min(x0 + xs / 2, xf)
 	if stopx == xf:
 		xe = stopx - startx
@@ -135,6 +134,7 @@ def add_star(starframe, star, loc=[0, 0], mag=0, mzp=22.5, exptime=1800.0):
 		yb = ys / 2 - y0
 	else:
 		yb = 0
+
 	stopy = min(y0 + ys / 2, yf)
 	if stopy == yf:
 		ye = stopy - starty
@@ -143,7 +143,7 @@ def add_star(starframe, star, loc=[0, 0], mag=0, mzp=22.5, exptime=1800.0):
 
 	# Add the star into the image
 	try:
-		starframe[startx:stopx, starty:stopy] += star_int[xb:xe, yb:ye]
+                starframe[startx:stopx, starty:stopy] += star_int[xb:xe, yb:ye]
 	except:
 		print startx, stopx, stopx - startx
 		print starty, stopy, stopy - starty
@@ -164,7 +164,7 @@ def plot_field(image, siglo=2.0, sighi=5.0, write=False):
 	plt.imshow(image,vmin=med-siglo*sig,vmax=med+sighi*sig,cmap='gray',interpolation='none')
 	plt.gca().invert_yaxis()
 	if write:
-			plt.savefig("stars.png")
+		plt.savefig("stars.png")
 
 
 def slice_plot(image):
@@ -207,8 +207,8 @@ def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=
 	for i in range(tr.info_len()):
 		loc = [x[i], y[i]]
 		mag = tri_data.iloc[i]['V']
-	starframe = add_star(starframe, star, loc=loc, mag=mag, mzp=mzp, exptime=exptime)
-	pbar.update(1)
+	        starframe = add_star(starframe, star, loc=loc, mag=mag, mzp=mzp, exptime=exptime)
+	        pbar.update(1)
 	pbar.close()
 
 	# add p9 in

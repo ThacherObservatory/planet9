@@ -34,7 +34,7 @@ def loadImage(filename, plot=True):
 		plt.figure()
 		plt.clf()
 		plt.imshow(image, vmin=vmin, vmax=vmax,
-				   cmap='gray', interpolation='none')
+				   cmap='gray', interpolation='nearest')
 
 	return image, header, med, sig
 
@@ -91,7 +91,7 @@ def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0, exptime=1800.0, readnois
 			plt.figure(987)
 			plt.clf()
 			plt.imshow(image, vmin=med - 2 * sig, vmax=med + 5 *
-					   sig, cmap='gray', interpolation='none')
+					   sig, cmap='gray', interpolation='nearest')
 			apertures.plot(color='cyan', lw=1.5, alpha=0.5)
 			plt.plot([1024], [1024], 'r+', ms=12)
 			plt.xlim(924, 1124)
