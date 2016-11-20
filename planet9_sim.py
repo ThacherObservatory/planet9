@@ -156,8 +156,9 @@ def add_star(starframe, star, loc=[0, 0], mag=0, mzp=22.5, exptime=1800.0):
 
 def plot_field(image, siglo=2.0, sighi=5.0, write=False):
 	# Make a plot
-		med = np.median(image)
-		sig = rb.std(image)
+        med = np.median(image)
+	sig = rb.std(image)
+        plt.ion()
 	plt.figure(1)
 	plt.clf()
 	plt.imshow(image,vmin=med-siglo*sig,vmax=med+sighi*sig,cmap='gray',interpolation='none')
@@ -168,8 +169,9 @@ def plot_field(image, siglo=2.0, sighi=5.0, write=False):
 
 def slice_plot(image):
 	# Show a cross section of the star in the image
-		xsize = np.shape(image)[0]
+	xsize = np.shape(image)[0]
 	slice = image[xsize//2,:]
+        plt.ion()
 	plt.figure(2)
 	plt.clf()
 	plt.xlim(xsize)
