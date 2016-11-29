@@ -88,7 +88,7 @@ def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0, exptime=1800.0, readnois
 			image, header, med, sig = loadImage('test_1.fits', plot=False)
 
 			plt.ion()
-			plt.figure(987)
+			plt.figure("p9 mag = " + str(p9mag))
 			plt.clf()
 			plt.imshow(image, vmin=med - 2 * sig, vmax=med + 5 *
 					   sig, cmap='gray', interpolation='nearest')
@@ -97,7 +97,7 @@ def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0, exptime=1800.0, readnois
 			plt.xlim(924, 1124)
 			plt.ylim(924, 1124)
 			plt.show()
-			pdb.set_trace()
+			#pdb.set_trace()
 
 	percent = np.float(found) / np.float(niter) * 100.0
 	control = np.float(rand) / np.float(niter) * 100.0
