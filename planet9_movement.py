@@ -15,6 +15,7 @@ Created on Tue Nov  1 15:07:13 2016
 
 import numpy as np
 import matplotlib.pyplot as plt
+import plot_params as pp
 
 # given summer solsace 2016 is 194 days from January 1 2017
 
@@ -47,26 +48,28 @@ def planet_speed(t, ra=90, dec=20, a=800):
     # Calculates speed of planet 9 in Arcsecconds / hour
     speed = (((x_deriv)**2 + (y_deriv)**(2))**(.500)) / 24
     
-    
-    
     return speed
+
 
 
 def plot():
     speed = []
-    t = np.linspace(0,365,num=366)
+    t = np.linspace(0,365,num=3000)
     for i in range(len(t)):
         s = planet_speed(t[i])
         speed = np.append(speed,s)
     
     #make plot
+    pp.plot_params()
     plt.figure(1)
     plt.clf
     plt.plot(t, speed)
     plt.ylim(0,0.3)
     plt.xlim(0,365)
-    plt.xlabel('Day of year', fontsize=17)
-    plt.ylabel('Planet Speed', fontsize=17)
+    plt.xlabel('Day of Year', fontsize=17)
+    plt.ylabel('Planet Speed (arcsecconds per hour)', fontsize=17)
+
+
 
 def find_cadence(t, ra=90, dec=20, a=800, m=10):
 
