@@ -14,39 +14,59 @@ Created on Tue Nov  1 15:07:13 2016
 # Planet 9 Location Finder
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 # given summer solsace 2016 is 194 days from January 1 2017
 
 
 def planet_speed(t, ra=90, dec=20, a=800):
-	"""
-	Return proper motion of planet for given input parameters
-	t: day of year
-	ra: Right Ascencion in degrees
-	dec: Declination in degrees
-	a: Semi-major axis of planet (not accounting for Earth distance).
-	"""
-	# Wrangle input variables
-	RA = np.radians(np.float(ra))
-	Dec = np.radians(np.float(dec))
-	Dis = np.float(a)
+    """
+    Return proper motion of planet for given input parameters
+    t: day of year
+    ra: Right Ascencion in degrees
+    dec: Declination in degrees
+    a: Semi-major axis of planet (not accounting for Earth distance).
+    """
+    # Wrangle input variables
+    RA = np.radians(np.float(ra))
+    Dec = np.radians(np.float(dec))
+    Dis = np.float(a)
 
-	# calculates width and height of planet 9's movement.
-	# Width and height are the distance from the ceter to poles, not absolute
-	# width / height
-	width = (3600.0 * 180.0) / (Dis * np.pi)
-	height = np.sin(Dec) * width
+    # calculates width and height of planet 9's movement.
+    # Width and height are the distance from the ceter to poles, not absolute
+    # width / height
+    width = (3600.0 * 180.0) / (Dis * np.pi)
+    height = np.sin(Dec) * width
 
-	# takes the derivative of x and y movement (parabolic equations)
-	x_deriv = width * 2 * np.pi / 365.2422 * \
+    # takes the derivative of x and y movement (parabolic equations)
+    x_deriv = width * 2 * np.pi / 365.2422 * \
 		np.cos((t + 195) * 2 * np.pi / 365.2422)
-	y_deriv = -height * 2 * np.pi / 365.2422 * \
+    y_deriv = -height * 2 * np.pi / 365.2422 * \
 		np.sin((t + 195) * 2 * np.pi / 365.2422)
 
-	# Calculates speed of planet 9 in Arcsecconds / hour
-	speed = (((x_deriv)**2 + (y_deriv)**(2))**(.500)) / 24
-	return speed
+    # Calculates speed of planet 9 in Arcsecconds / hour
+    speed = (((x_deriv)**2 + (y_deriv)**(2))**(.500)) / 24
+    
+    
+    
+    return speed
 
+
+def plot():
+    speed = []
+    t = np.linspace(0,365,num=366)
+    for i in range(len(t)):
+        s = planet_speed(t[i])
+        speed = np.append(speed,s)
+    
+    #make plot
+    plt.figure(1)
+    plt.clf
+    plt.plot(t, speed)
+    plt.ylim(0,0.3)
+    plt.xlim(0,365)
+    plt.xlabel('Day of year', fontsize=17)
+    plt.ylabel('Planet Speed', fontsize=17)
 
 def find_cadence(t, ra=90, dec=20, a=800, m=10):
 
