@@ -180,60 +180,61 @@ def slice_plot(image):
 
 def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=3.0,plate_scale=0.61,width=10.0,
 			   background=21.3,mzp=22.5,exptime=1800.0,write=False,
-			   p9pos=[1000,1000],p9mag=23.0,plot=False):
-	"""
-	Make a field of stars with realistic noise properties
-	"""
+			   p9pos=[1024,1024],p9mag=23.0,plot=False):
+    """
+    Make a field of stars with realistic noise properties
+    """
 
-	# create coordinate system
-	starframe = make_blank_frame(size=size,oversamp=oversamp)
-	noiseframe = make_noise_frame(size=size,bias=bias,readnoise=readnoise,background=background,
-								  plate_scale=plate_scale,mzp=mzp,exptime=exptime)
-	xs = np.shape(noiseframe)[0]
-	ys = np.shape(noiseframe)[1]
+# create coordinate system
+    starframe = make_blank_frame(size=size,oversamp=oversamp)
+    noiseframe = make_noise_frame(size=size,bias=bias,readnoise=readnoise,background=background,
+                                      plate_scale=plate_scale,mzp=mzp,exptime=exptime)
+    xs = np.shape(noiseframe)[0]
+    ys = np.shape(noiseframe)[1]
 
-	# create random coordinates
-	if x == None or y == None:
-		x, y = distribute(size=size*oversamp)
+# create random coordinates
+    if x == None or y == None:
+        x, y = distribute(size=size*oversamp)
 
-	star = make_star(seeing=seeing,plate_scale=plate_scale/oversamp,width=width)
+    star = make_star(seeing=seeing,plate_scale=plate_scale/oversamp,width=width)
 
-	tri_data = tr.info_col('V')
+    tri_data = tr.info_col('V')
 
-	# progress bar
-	pbar = tqdm(desc = 'Placing stars', total = tr.info_len(), unit = 'stars')
+# progress bar
+    pbar = tqdm(desc = 'Placing stars', total = tr.info_len(), unit = 'stars')
 
-	# generate stars
-	for i in range(tr.info_len()):
-		loc = [x[i], y[i]]
-		mag = tri_data.iloc[i]['V']
-	        starframe = add_star(starframe, star, loc=loc, mag=mag, mzp=mzp, exptime=exptime)
-	        pbar.update(1)
-	pbar.close()
+# generate stars
+    for i in range(tr.info_len()):
+        loc = [x[i], y[i]]
+        mag = tri_data.iloc[i]['V']
+        starframe = add_star(starframe, star, loc=loc, mag=mag, mzp=mzp, exptime=exptime)
+        pbar.update(1)
+    pbar.close()
 
-	# add p9 in
-	starframe = add_star(starframe, star, loc=p9pos, mag=p9mag, mzp=mzp, exptime=exptime)
+    pdb.set_trace()
+# add p9 in
+    starframe = add_star(starframe, star, loc=p9pos, mag=p9mag, mzp=mzp, exptime=exptime)
 
-	# rebin oversampled data
-	if oversamp > 1:
-		starframe = rebin(starframe,xs,ys)
+# rebin oversampled data
+    if oversamp > 1:
+        starframe = rebin(starframe,xs,ys)
 
-	# add poisson noise to the star image
-	shape = np.shape(starframe)
-	star_int = starframe.astype('int')
-	star_noise = np.random.poisson(star_int.flatten())
-	star_noise = np.reshape(star_noise,shape)
+# add poisson noise to the star image
+    shape = np.shape(starframe)
+    star_int = starframe.astype('int')
+    star_noise = np.random.poisson(star_int.flatten())
+    star_noise = np.reshape(star_noise,shape)
 
-	image = star_noise + noiseframe
+    image = star_noise + noiseframe
 
-	# render image and save it
-	if write:
-		fits.writeto('stars.fits', image, clobber = True)
+# render image and save it
+    if write:
+        fits.writeto('stars.fits', image, clobber = True)
 
-	if plot:
-		plot_field(image,write=write)
+    if plot:
+        plot_field(image,write=write)
 
-	return image
+    return image
 
 
 def planet9_movie(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
