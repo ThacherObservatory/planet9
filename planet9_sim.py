@@ -90,13 +90,13 @@ def distribute(size=2048):
 
 
 # place stars into the field
-def add_star(starframe, star, loc=[0, 0], mag=0, mzp=22.5, exptime=1800.0):
+def add_star(starframe, star, loc=[0, 0], mag=0, mzp=22.5, exptime=1800.0, oversamp=1):
 	# extract x and y values of the star
 	x0 = loc[0]
 	y0 = loc[1]
 
 	# compute total flux of star
-	flux = exptime * (10**(-0.4 * (mag - mzp)))  # flux
+	flux = exptime * (10**(-0.4 * (mag - mzp))) * oversamp * oversamp  # flux
 
 	# turn into integers
 	starnorm = star * flux
@@ -188,13 +188,13 @@ def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=
 	# create coordinate system
 	starframe = make_blank_frame(size=size,oversamp=oversamp)
 	noiseframe = make_noise_frame(size=size,bias=bias,readnoise=readnoise,background=background,
-								  plate_scale=plate_scale,mzp=mzp,exptime=exptime)
+				      plate_scale=plate_scale,mzp=mzp,exptime=exptime)
 	xs = np.shape(noiseframe)[0]
 	ys = np.shape(noiseframe)[1]
 
 	# create random coordinates
 	if x == None or y == None:
-		x, y = distribute(size=size*oversamp)
+                x, y = distribute(size=size*oversamp)
 
 	star = make_star(seeing=seeing,plate_scale=plate_scale/oversamp,width=width)
 
@@ -207,12 +207,14 @@ def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=
 	for i in range(tr.info_len()):
 		loc = [x[i], y[i]]
 		mag = tri_data.iloc[i]['V']
-	        starframe = add_star(starframe, star, loc=loc, mag=mag, mzp=mzp, exptime=exptime)
+	        starframe = add_star(starframe, star, loc=loc, mag=mag, mzp=mzp, exptime=exptime,
+                                     oversamp=oversamp)
 	        pbar.update(1)
 	pbar.close()
 
 	# add p9 in
-	starframe = add_star(starframe, star, loc=p9pos, mag=p9mag, mzp=mzp, exptime=exptime)
+	starframe = add_star(starframe, star, loc=p9pos, mag=p9mag, mzp=mzp, exptime=exptime,
+                             oversamp=oversamp)
 
 	# rebin oversampled data
 	if oversamp > 1:
