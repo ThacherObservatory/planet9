@@ -109,7 +109,9 @@ def runTest(p9mag=[10, 25], nstep=10, seeing=3.5, threshold=2.0, exptime=1800.0,
 			sharplo=0.2, sharphi=1.0, roundlo=-0.5, roundhi=0.5,
 			niter=100, debug=False, mzp=22.5):
 
+
         mags = np.linspace(p9mag[0],p9mag[1],nstep)
+
 	#mags = (np.arange(p9mag[0], p9mag[1] + 1)).astype('float')
 
 	percent = []
