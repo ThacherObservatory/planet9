@@ -54,13 +54,13 @@ def findSources(filename, plot=True, pixscale=0.61, seeing=3.0, threshold=2.0,
 
 def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0, exptime=1800.0, readnoise=2.0,
 				 sharplo=0.2, sharphi=1.0, roundlo=-0.5, roundhi=0.5,
-				 niter=10, debug=False):
+				 niter=10, debug=False,mzp=22.5):
 
 	found = 0
 	rand = 0
 	for i in range(niter):
 		p9s.planet9_sequence(p9mag=p9mag, exptime=exptime, readnoise=readnoise,
-							 nimage=1, filename='test')
+							 nimage=1, filename='test', mzp=mzp)
 		sources = findSources('test_1.fits', threshold=threshold, seeing=seeing, sharplo=sharplo,
 							  roundlo=roundlo, roundhi=roundhi, plot=False)
 
@@ -107,7 +107,7 @@ def testRecovery(p9mag=10.0, seeing=3.5, threshold=2.0, exptime=1800.0, readnois
 
 def runTest(p9mag=[10, 25], nstep=10, seeing=3.5, threshold=2.0, exptime=1800.0, readnoise=2.0,
 			sharplo=0.2, sharphi=1.0, roundlo=-0.5, roundhi=0.5,
-			niter=100, debug=False):
+			niter=100, debug=False, mzp=22.5):
 
         mags = np.linspace(p9mag[0],p9mag[1],nstep)
 	#mags = (np.arange(p9mag[0], p9mag[1] + 1)).astype('float')
@@ -115,7 +115,7 @@ def runTest(p9mag=[10, 25], nstep=10, seeing=3.5, threshold=2.0, exptime=1800.0,
 	percent = []
 	control = []
 	for mag in mags:
-		p, c = testRecovery(p9mag=mag, niter=niter, debug=debug,
+		p, c = testRecovery(p9mag=mag, niter=niter, debug=debug,mzp=mzp,
 							exptime=exptime, readnoise=readnoise,
 							roundhi=roundhi, roundlo=roundlo, sharphi=sharphi,
 							sharplo=sharplo, threshold=threshold, seeing=seeing)
