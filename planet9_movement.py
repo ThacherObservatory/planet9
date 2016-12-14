@@ -63,11 +63,11 @@ def plot():
     pp.plot_params()
     plt.figure(1)
     plt.clf
-    plt.plot(t, speed)
     plt.ylim(0,0.3)
     plt.xlim(0,365)
     plt.xlabel('Day of Year', fontsize=17)
     plt.ylabel('Planet Speed (arcsecconds per hour)', fontsize=17)
+    plt.plot(t, speed, linewidth=3.0, color='r')
 
 
 
