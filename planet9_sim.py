@@ -90,13 +90,13 @@ def distribute(size=2048):
 
 
 # place stars into the field
-def add_star(starframe, star, loc=[0, 0], mag=0, mzp=22.5, exptime=1800.0):
+def add_star(starframe, star, loc=[0, 0], mag=0, mzp=22.5, exptime=1800.0, oversamp=1):
 	# extract x and y values of the star
 	x0 = loc[0]
 	y0 = loc[1]
 
 	# compute total flux of star
-	flux = exptime * (10**(-0.4 * (mag - mzp)))  # flux
+	flux = exptime * (10**(-0.4 * (mag - mzp))) * oversamp * oversamp  # flux
 
 	# turn into integers
 	starnorm = star * flux
@@ -252,8 +252,8 @@ def planet9_movie(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
 
 	for i in range(nimage):
 		image = make_field(size=size,x=x,y=y,oversamp=oversamp,bias=bias,readnoise=readnoise,seeing=seeing,
-						   plate_scale=plate_scale,width=width,background=background,mzp=mzp,exptime=exptime,
-						   write=write,p9pos=[p9_x[i],p9_y[i]],p9mag=p9mag)
+				   plate_scale=plate_scale,width=width,background=background,mzp=mzp,exptime=exptime,
+				   write=write,p9pos=[p9_x[i],p9_y[i]],p9mag=p9mag)
 		fname = 'p9_image%05d.png'%i
 		plt.savefig(fname,bbox_inches='tight',transparent=True, pad_inches=0,frameon=False,
 					dpi=150)
@@ -266,9 +266,10 @@ def planet9_movie(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
 
 
 def planet9_sequence(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
-					 plate_scale=0.61,width=10.0,background=21.3,mzp=22.5,exptime=1800.0,
-					 write=False,p9pos=[1024,1024],p9mag=23.0,dpos=30.0,angle=225.0,nimage=4,
-					 filename='P9'):
+		     plate_scale=0.61,width=10.0,background=21.3,mzp=22.5,exptime=1800.0,
+                     write=False,p9pos=[1024,1024],p9mag=23.0,dpos=30.0,angle=225.0,nimage=4,
+		     filename='P9'):
+
 	# get locations of stars
 	x, y = distribute(size=size*oversamp)
 
@@ -279,8 +280,8 @@ def planet9_sequence(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
 
 	for i in range(nimage):
 		image = make_field(size=size,x=x,y=y,oversamp=oversamp,bias=bias,readnoise=readnoise,seeing=seeing,
-						   plate_scale=plate_scale,width=width,background=background,mzp=mzp,exptime=exptime,
-						   write=write,p9pos=[p9_x[i],p9_y[i]],p9mag=p9mag)
+				   plate_scale=plate_scale,width=width,background=background,mzp=mzp,
+                                   exptime=exptime,write=write,p9pos=[p9_x[i],p9_y[i]],p9mag=p9mag)
 
 		# write image to FITS
 		fits.writeto(filename+'_'+str(i+1)+'.fits', image, clobber = True)
@@ -289,5 +290,5 @@ def planet9_sequence(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
 
 
 # run
-if __name__ == '__main__':
-	planet9_movie()
+#if __name__ == '__main__':
+#	planet9_movie()
