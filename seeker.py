@@ -15,8 +15,8 @@ from plot_params import *
 import pdb
 import pickle
 
-#path = "/Users/nickedwards/Desktop/"
-#filename = path + "stars.fits"
+path = "/Users/nickedwards/python/index/planet9/"
+filename = path + "stars.fits"
 
 # some standard variables
 
@@ -47,7 +47,8 @@ def findSources(filename, plot=True, pixscale=0.61, seeing=3.0, threshold=2.0,
 	positions = (sources['xcentroid'], sources['ycentroid'])
 	apertures = CircularAperture(positions, r=seeing / pixscale)
 	if plot:
-		apertures.plot(color='cyan', lw=1.5, alpha=0.5)
+         apertures.plot(color='cyan', lw=1.5, alpha=0.5)
+         plt.savefig("stars with sources",dpi=300)
 
 	return sources
 

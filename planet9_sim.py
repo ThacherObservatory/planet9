@@ -164,7 +164,7 @@ def plot_field(image, siglo=2.0, sighi=5.0, write=False):
 	plt.imshow(image,vmin=med-siglo*sig,vmax=med+sighi*sig,cmap='gray',interpolation='none')
 	plt.gca().invert_yaxis()
 	if write:
-		plt.savefig("stars.png")
+		plt.savefig("stars.png",dpi=300)
 
 
 def slice_plot(image):
