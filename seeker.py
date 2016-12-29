@@ -22,33 +22,33 @@ filename = path + "stars.fits"
 
 
 def loadImage(filename, plot=True):
-	image, header = fits.getdata(filename, 0, header=True)
-	med = np.median(image)
-	sig = rb.std(image)
-	siglo = 3
-	sighi = 7
-	vmin = med - siglo * sig
-	vmax = med + sighi * sig
-	if plot:
-		plt.ion()
-		plt.figure()
-		plt.clf()
-		plt.imshow(image, vmin=vmin, vmax=vmax,
-				   cmap='gray', interpolation='nearest')
+    image, header = fits.getdata(filename, 0, header=True)
+    med = np.median(image)
+    sig = rb.std(image)
+    siglo = 3
+    sighi = 7
+    vmin = med - siglo * sig
+    vmax = med + sighi * sig
+    if plot:
+        plt.ion()
+        plt.figure('sources')
+        plt.clf()
+        plt.imshow(image[1000:1500,750:1250], vmin=vmin, vmax=vmax,cmap='gray', interpolation='nearest')
 
-	return image, header, med, sig
+    return image, header, med, sig
 
 
-def findSources(filename, plot=True, pixscale=0.61, seeing=3.0, threshold=2.0,
-				sharplo=0.2, sharphi=1.0, roundlo=-0.5, roundhi=0.5, mzp=22.5):
+def findSources(filename, plot=True, pixscale=0.61, seeing=3.5, threshold=3.0,
+				sharplo=0.2, sharphi=1.0, roundlo=-1, roundhi=1, mzp=22.5):
 	image, header, med, sig = loadImage(filename, plot=plot)
-	sources = daofind(image - med, fwhm=seeing / pixscale, threshold=threshold * sig,
+	sources = daofind(image[1000:1500,750:1250] - med, fwhm=seeing / pixscale, threshold=threshold * sig,
 					  sharplo=sharplo, sharphi=sharphi, roundlo=roundlo, roundhi=roundhi)
-	positions = (sources['xcentroid'], sources['ycentroid'])
+	positions = (sources['xcentroid'],sources['ycentroid'])
 	apertures = CircularAperture(positions, r=seeing / pixscale)
 	if plot:
          apertures.plot(color='cyan', lw=1.5, alpha=0.5)
-         plt.savefig("stars with sources",dpi=300)
+         plt.gca().invert_yaxis()
+         plt.savefig("sources",dpi=300)
 
 	return sources
 
