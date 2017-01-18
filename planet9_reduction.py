@@ -8,17 +8,20 @@ Created on Sun Jan 15 13:44:34 2017
 
 import numpy as np
 import matplotlib.pyplot as plt
-from quick_image import display_image, readimage
+from Quickimage import show_image, readimage
 import thacherphot as tp
 import hcongrid as h
 from astropy.io import fits
 from kapteyn import maputils
 import sys
 
-bias = tp.master_bias(None)
-flat = tp.master_flat(None)
+datadir = '/Users/ONeill/astronomy/data/14Jan2017/'
 
-datadir = '/Users/ONeill/astronomy/data/P9/'
+bias_files = tp.get_files(dir=datadir,prefix='P9',suffix='bias.fit')
+flat_files = tp.get_files(dir=datadir,prefix='cal',suffix='.fit')
+bias = tp.master_bias(bias_files)
+flat = tp.master_flat(flat_files)
+
 files,fct = tp.get_files(dir=datadir,prefix='P9',suffix='solved.fits')
 
 zsz = len(files)
@@ -39,17 +42,11 @@ for i in range(zsz):
     
 final = np.median(stack, axis=2)
 
-display_image(final)
+show_image(final)
 
 fits.writeto('P9_sample_image.fits', final, refh)
 
 sys.exit()
-
-
-from kapteyn import maputils
-from matplotlib import pyplot as plt
-import numpy as np
-from quick_image import readimage
 
 image0,header0 = readimage("P9_sample_image.fits")
 
