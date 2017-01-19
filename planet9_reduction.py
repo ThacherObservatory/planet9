@@ -17,8 +17,8 @@ import sys
 
 datadir = '/Users/ONeill/astronomy/data/14Jan2017/'
 
-bias_files = tp.get_files(dir=datadir,prefix='P9',suffix='bias.fit')
-flat_files = tp.get_files(dir=datadir,prefix='cal',suffix='.fit')
+bias_files, biasfct = tp.get_files(dir=datadir,prefix='P9',suffix='bias.fit')
+flat_files, flatfct = tp.get_files(dir=datadir,prefix='cal',suffix='.fit')
 bias = tp.master_bias(bias_files)
 flat = tp.master_flat(flat_files)
 
