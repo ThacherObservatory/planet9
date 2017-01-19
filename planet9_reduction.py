@@ -14,6 +14,7 @@ import hcongrid as h
 from astropy.io import fits
 from kapteyn import maputils
 import sys
+import pdb
 
 def make_im(datadir='/data/ThacherObs/2017Jan14/',plot=True):
     '''
@@ -40,6 +41,15 @@ def make_im(datadir='/data/ThacherObs/2017Jan14/',plot=True):
     for i in range(zsz):
         print 'Starting image '+str(i)+' of '+str(zsz)
         im = h.pyfits.open(files[i])
+        im_orig = im[0]
+        im_fix = (im_orig.data-bias)/flat
+        plt.clf()
+        plt.ion()
+        plt.figure(1)
+        plt.plot(im_orig)
+        plt.figure(2)
+        plt.plot(im_fix)
+        pdb.set_trace()
         newim = h.hcongrid((im[0].data-bias)/flat, im[0].header,refh)
         stack[:,:,i] = newim
     
