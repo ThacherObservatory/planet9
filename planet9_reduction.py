@@ -8,7 +8,8 @@ Created on Sun Jan 15 13:44:34 2017
 
 import numpy as np
 import matplotlib.pyplot as plt
-from quick_image import display_image, readimage
+#from quick_image import display_image, readimage
+from Quickimage import show_image, readimage
 import thacherphot as tp
 import hcongrid as h
 from astropy.io import fits
@@ -16,7 +17,7 @@ from kapteyn import maputils
 import sys
 import pdb
 
-def make_im(datadir='/data/ThacherObs/2017Jan14/',plot=True):
+def make_im(datadir=dir,plot=True):
     '''
     Combines solved images using hcongrid to produce .fits and .png of total field
     Should run on bellerophon in interest of time
@@ -41,21 +42,18 @@ def make_im(datadir='/data/ThacherObs/2017Jan14/',plot=True):
     for i in range(zsz):
         print 'Starting image '+str(i)+' of '+str(zsz)
         im = h.pyfits.open(files[i])
-        im_orig = im[0]
-        im_fix = (im_orig.data-bias)/flat
-        plt.clf()
-        plt.ion()
-        plt.figure(1)
-        plt.plot(im_orig)
-        plt.figure(2)
-        plt.plot(im_fix)
-        pdb.set_trace()
-        newim = h.hcongrid((im[0].data-bias)/flat, im[0].header,refh)
+        #im_orig = im[0].data
+        #im_fix = (im[0].data-bias)/flat
+        #show_image(im_orig)
+        #show_image(im_fix)
+        #pdb.set_trace()
+        newim = h.hcongrid((im[0].data-bias), im[0].header,refh)
         stack[:,:,i] = newim
     
     #Creates final image and saves as .fits
     final = np.median(stack, axis=2)
-    display_image(final)
+    #display_image(final)
+    show_image(final)
     fits.writeto('P9_sample_image.fits', final, refh)
     sys.exit()
     
