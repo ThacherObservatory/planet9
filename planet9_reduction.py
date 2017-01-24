@@ -9,7 +9,7 @@ Created on Sun Jan 15 13:44:34 2017
 import numpy as np
 import matplotlib.pyplot as plt
 #from quick_image import display_image, readimage
-from quick_imagee import display_image, readimage
+from quick_image import display_image, readimage
 import thacherphot as tp
 import hcongrid as h
 from astropy.io import fits
