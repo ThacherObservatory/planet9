@@ -16,6 +16,7 @@ from astropy.io import fits
 from kapteyn import maputils
 import sys
 import pdb
+import os
 
 def make_im(datadir=dir,plot=True):
     '''
@@ -54,6 +55,8 @@ def make_im(datadir=dir,plot=True):
     final = np.median(stack, axis=2)
     #display_image(final)
     display_image(final)
+    rmcmd = 'rm -rf '+'P9_sample_image.fits'
+    os.system(rmcmd)
     fits.writeto('P9_sample_image.fits', final, refh)
     sys.exit()
     
@@ -74,6 +77,8 @@ def make_im(datadir=dir,plot=True):
         grat.setp_ticklabel(plotaxis='left',fontsize=14)
         grat.setp_ticklabel(plotaxis='bottom',fontsize=14)
         annim.plot()
+        rmcmd = 'rm -rf '+'P9_sample_image.png'
+        os.system(rmcmd)
         plt.savefig('P9_sample_image.png',dpi=300)
         plt.show()
         
