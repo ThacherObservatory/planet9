@@ -3,11 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-# Imports the TRILEGAL data file as a table
+# Imports the PanSTARRS data file as a table
 def load_info():
 	dataFile = os.path.join(os.getcwd(), os.path.normpath(
-		"data/TRILEGAL.table"))  # File location
-	info = pd.read_table(dataFile, delim_whitespace=True)
+		"data/PanSTARRS.table"))  # File location
+	info = pd.read_csv(dataFile)
 	return info
 
 # returns a specific comlumn (string)
