@@ -7,7 +7,7 @@ import os
 def load_info():
 	dataFile = os.path.join(os.getcwd(), os.path.normpath(
 		"data/PanSTARRS.table"))  # File location
-	info = pd.read_table(dataFile, delim_whitespace=True)
+	info = pd.read_csv(dataFile)
 	return info
 
 # returns a specific comlumn (string)
