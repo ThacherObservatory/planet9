@@ -55,10 +55,13 @@ def make_im(datadir=dir,plot=True):
     final = np.median(stack, axis=2)
     #display_image(final)
     display_image(final)
+    
+    refs = '/Users/ONeill/astronomy/python/git/planet9/data/PanSTARRS.table'
+    
     rmcmd = 'rm -rf '+'P9_sample_image.fits'
     os.system(rmcmd)
     fits.writeto('P9_sample_image.fits', final, refh)
-    sys.exit()
+    #sys.exit()
     
     #Adds annotations to final image and saves as .png
     if plot:
