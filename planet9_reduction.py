@@ -8,7 +8,6 @@ Created on Sun Jan 15 13:44:34 2017
 
 import numpy as np
 import matplotlib.pyplot as plt
-#from quick_image import display_image, readimage
 from quick_image import display_image, read_image
 import thacherphot as tp
 import hcongrid as h
@@ -86,7 +85,7 @@ def make_im(datadir=dir,plot=True):
         grat.setp_ticklabel(plotaxis='bottom',fontsize=14)
         annim.plot()
 
-        reffile = '/Users/ONeill/astronomy/python/git/planet9/data/PanSTARRS_update'
+        reffile = '/home/administrator/python/planet9/data/PanSTARRS_update'
         info = pd.read_csv(reffile,sep=',')
         ras = info['raMean']
         decs = info['decMean']
