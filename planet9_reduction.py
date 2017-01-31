@@ -9,7 +9,7 @@ Created on Sun Jan 15 13:44:34 2017
 import numpy as np
 import matplotlib.pyplot as plt
 #from quick_image import display_image, readimage
-from quick_image import display_image, readimage
+from quick_image import display_image, read_image
 import thacherphot as tp
 import hcongrid as h
 from astropy.io import fits
@@ -17,6 +17,11 @@ from kapteyn import maputils
 import sys
 import pdb
 import os
+import pandas as pd
+from astropy import wcs
+from astropysics.coords import AngularCoordinate as angcor
+from fitgaussian import *
+import astropy
 
 def make_im(datadir=dir,plot=True):
     '''
@@ -56,8 +61,6 @@ def make_im(datadir=dir,plot=True):
     #display_image(final)
     display_image(final)
     
-    refs = '/Users/ONeill/astronomy/python/git/planet9/data/PanSTARRS.table'
-    
     rmcmd = 'rm -rf '+'P9_sample_image.fits'
     os.system(rmcmd)
     fits.writeto('P9_sample_image.fits', final, refh)
@@ -65,7 +68,7 @@ def make_im(datadir=dir,plot=True):
     
     #Adds annotations to final image and saves as .png
     if plot:
-        image0,header0 = readimage("P9_sample_image.fits")
+        image0,header0 = read_image("P9_sample_image.fits")
         clipmin = np.median(image0)-0.3*np.std(image0)
         clipmax = np.median(image0)+2*np.std(image0)
         f = maputils.FITSimage("P9_sample_image.fits")
@@ -80,6 +83,23 @@ def make_im(datadir=dir,plot=True):
         grat.setp_ticklabel(plotaxis='left',fontsize=14)
         grat.setp_ticklabel(plotaxis='bottom',fontsize=14)
         annim.plot()
+        
+        reffile = '/Users/ONeill/astronomy/python/git/planet9/data/PanSTARRS.table'
+        info = pd.read_csv(reffile)
+        ras = info['raMean']
+        decs = info['decMean']
+        hdulist = astropy.io.fits.open('P9_sample_image.fits')
+        w = wcs.WCS(hdulist[0].header)
+        for n in range(len(ras)):
+            ra0  = angcor(ras[n]).d
+            dec0 = angcor(decs[n]).d
+            world0 = np.array([[ra0, dec0]])
+            pix0 = w.wcs_world2pix(world0,1)
+            x0 = pix0[0,0]
+            y0 = pix0[0,1]
+            plt.scatter(x0,y0,marker='o',facecolor='none',edgecolor='yellow',linewidth=1.5)
+            plt.show()
+
         rmcmd = 'rm -rf '+'P9_sample_image.png'
         os.system(rmcmd)
         plt.savefig('P9_sample_image.png',dpi=300)
