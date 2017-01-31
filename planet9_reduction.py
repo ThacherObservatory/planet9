@@ -33,7 +33,7 @@ def make_im(datadir=dir,plot=True):
     flat_files, flatfct = tp.get_files(dir=datadir,prefix='cal',suffix='.fit')
     bias = tp.master_bias(bias_files)
     flat = tp.master_flat(flat_files)
-    
+
     files,fct = tp.get_files(dir=datadir,prefix='P9',suffix='solved.fits')
 
     #Establishes frame in middle of run as reference file for hcongrid
@@ -43,7 +43,7 @@ def make_im(datadir=dir,plot=True):
     ysz, xsz = np.shape(image0)
     refh = h.pyfits.getheader(reffile)
     stack = np.zeros((xsz,ysz,zsz))
-    
+
     #Stacks images using hcongrid with middle frame as reference
     for i in range(zsz):
         print 'Starting image '+str(i)+' of '+str(zsz)
@@ -54,18 +54,20 @@ def make_im(datadir=dir,plot=True):
         #show_image(im_fix)
         #pdb.set_trace()
         newim = h.hcongrid((im[0].data-bias), im[0].header,refh)
+        bkg = Background(newim, (10, 10), filter_shape=(3, 3), method='median')
+        newim -= bkg.background
         stack[:,:,i] = newim
-    
+
     #Creates final image and saves as .fits
     final = np.median(stack, axis=2)
     #display_image(final)
     display_image(final)
-    
+
     rmcmd = 'rm -rf '+'P9_sample_image.fits'
     os.system(rmcmd)
     fits.writeto('P9_sample_image.fits', final, refh)
     #sys.exit()
-    
+
     #Adds annotations to final image and saves as .png
     if plot:
         image0,header0 = read_image("P9_sample_image.fits")
@@ -83,7 +85,7 @@ def make_im(datadir=dir,plot=True):
         grat.setp_ticklabel(plotaxis='left',fontsize=14)
         grat.setp_ticklabel(plotaxis='bottom',fontsize=14)
         annim.plot()
-        
+
         reffile = '/Users/ONeill/astronomy/python/git/planet9/data/PanSTARRS_update'
         info = pd.read_csv(reffile,sep=',')
         ras = info['raMean']
@@ -110,6 +112,6 @@ def make_im(datadir=dir,plot=True):
         os.system(rmcmd)
         plt.savefig('P9_sample_image.png',dpi=300)
         plt.show()
-        
+
     return
 
