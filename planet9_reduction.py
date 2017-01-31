@@ -84,21 +84,27 @@ def make_im(datadir=dir,plot=True):
         grat.setp_ticklabel(plotaxis='bottom',fontsize=14)
         annim.plot()
         
-        reffile = '/Users/ONeill/astronomy/python/git/planet9/data/PanSTARRS.table'
-        info = pd.read_csv(reffile)
+        reffile = '/Users/ONeill/astronomy/python/git/planet9/data/PanSTARRS_update'
+        info = pd.read_csv(reffile,sep=',')
         ras = info['raMean']
         decs = info['decMean']
         hdulist = astropy.io.fits.open('P9_sample_image.fits')
         w = wcs.WCS(hdulist[0].header)
+        i = 0
         for n in range(len(ras)):
-            ra0  = angcor(ras[n]).d
-            dec0 = angcor(decs[n]).d
-            world0 = np.array([[ra0, dec0]])
-            pix0 = w.wcs_world2pix(world0,1)
-            x0 = pix0[0,0]
-            y0 = pix0[0,1]
-            plt.scatter(x0,y0,marker='o',facecolor='none',edgecolor='yellow',linewidth=1.5)
-            plt.show()
+            if float(info['rMeanApMag'][n+1]) <= 19:
+                ra0  = angcor(ras[n+1]).d
+                dec0 = angcor(decs[n+1]).d
+                world0 = np.array([[ra0, dec0]])
+                pix0 = w.wcs_world2pix(world0,1)
+                x0 = pix0[0,0]
+                y0 = pix0[0,1]
+                plt.scatter(x0,y0,marker='o',facecolor='none',edgecolor='yellow',linewidth=1.5)
+                plt.show()
+                i += 1
+                pass
+            else:
+                pass
 
         rmcmd = 'rm -rf '+'P9_sample_image.png'
         os.system(rmcmd)
