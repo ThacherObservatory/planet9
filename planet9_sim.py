@@ -8,6 +8,7 @@ from rebin import rebin
 import pdb,os
 import robust as rb
 
+
 # Variables
 # sigma = 20				# Read noise
 # floor = 500				# Bias level
