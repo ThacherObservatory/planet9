@@ -235,6 +235,7 @@ def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=
         plot_field(image,write=write)
 
     return image
+    #return np.sqrt(image)
 
 
 def planet9_movie(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
@@ -254,6 +255,7 @@ def planet9_movie(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
           image = make_field(size=size,x=x,y=y,oversamp=oversamp,bias=bias,readnoise=readnoise,seeing=seeing,
 				   plate_scale=plate_scale,width=width,background=background,mzp=mzp,exptime=exptime,
 				   write=write,p9pos=[p9_x[i],p9_y[i]],p9mag=p9mag)
+          image = np.sqrt(image)
           fname = 'p9_image%05d.png'%i
           plot_field(image)
           plt.savefig(fname,bbox_inches='tight',transparent=True, pad_inches=0,frameon=False,
