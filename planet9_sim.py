@@ -154,28 +154,28 @@ def add_star(starframe, star, loc=[0, 0], mag=0, mzp=22.5, exptime=1800.0, overs
 	return starframe
 
 
-def plot_field(image, siglo=2.0, sighi=5.0, write=False):
-	# Make a plot
-        med = np.median(image)
-	sig = rb.std(image)
-        plt.ion()
-	plt.figure(1)
-	plt.clf()
-	plt.imshow(image,vmin=med-siglo*sig,vmax=med+sighi*sig,cmap='gray',interpolation='none')
-	plt.gca().invert_yaxis()
-	if write:
-		plt.savefig("stars.png",dpi=300)
+def plot_field(image, siglo=1.0, sighi=3.0, write=False):
+    # Make a plot
+    med = np.median(image)
+    sig = rb.std(image)
+    plt.ion()
+    plt.figure(1)
+    plt.clf()
+    plt.imshow(image,vmin=med-siglo*sig,vmax=med+sighi*sig,cmap='gray',interpolation='none')
+    plt.gca().invert_yaxis()
+    if write:
+        plt.savefig("stars.png",dpi=300)
 
 
 def slice_plot(image):
-	# Show a cross section of the star in the image
-	xsize = np.shape(image)[0]
-	slice = image[xsize//2,:]
-        plt.ion()
-	plt.figure(2)
-	plt.clf()
-	plt.xlim(xsize)
-	plt.plot(slice)
+    # Show a cross section of the star in the image
+    xsize = np.shape(image)[0]
+    slice = image[xsize//2,:]
+    plt.ion()
+    plt.figure(2)
+    plt.clf()
+    plt.xlim(xsize)
+    plt.plot(slice)
 
 
 def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=3.0,plate_scale=0.61,width=10.0,
