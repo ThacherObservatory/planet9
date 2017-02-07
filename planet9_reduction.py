@@ -38,7 +38,7 @@ def make_im(datadir=dir,plot=True):
     #Establishes frame in middle of run as reference file for hcongrid
     zsz = len(files)
     reffile = files[zsz/2]
-    image0,header0 = readimage(reffile)
+    image0,header0 = read_image(reffile)
     ysz, xsz = np.shape(image0)
     refh = h.pyfits.getheader(reffile)
     stack = np.zeros((xsz,ysz,zsz))
