@@ -94,7 +94,7 @@ def make_im(datadir=dir,plot=True):
         w = wcs.WCS(hdulist[0].header)
         i = 0
         for n in range(len(ras)):
-            if float(info['rMeanApMag'][n+1]) <= 19:
+            if float(info['rMeanApMag'][n+1])>=16.9 and float(info['rMeanApMag'][n+1])<=17.1:
                 ra0  = angcor(ras[n+1]).d
                 dec0 = angcor(decs[n+1]).d
                 world0 = np.array([[ra0, dec0]])
