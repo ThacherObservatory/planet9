@@ -54,7 +54,7 @@ def make_im(datadir=dir,plot=True):
         #show_image(im_fix)
         #pdb.set_trace()
         newim = h.hcongrid((im[0].data-bias), im[0].header,refh)
-        bkg = Background2D(newim, (10, 10), box_size=(3, 3))
+        bkg = Background2D(newim, (10, 10), box_size=(3))
         newim -= bkg.background
         stack[:,:,i] = newim
 
