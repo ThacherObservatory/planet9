@@ -21,7 +21,7 @@ from astropy import wcs
 from astropysics.coords import AngularCoordinate as angcor
 from fitgaussian import *
 import astropy
-from photutils.background import Background
+from photutils.background import Background2D
 
 def make_im(datadir=dir,plot=True):
     '''
