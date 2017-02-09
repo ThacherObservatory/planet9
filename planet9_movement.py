@@ -68,7 +68,6 @@ def plot():
     plt.xlabel('Day of Year', fontsize=17)
     plt.ylabel('Planet Speed (arcseconds per hour)', fontsize=17)
     plt.plot(t, speed, linewidth=3.0, color='r')
-    plt.savefig('P9_motion.png',dpi=300)
 
 
 
