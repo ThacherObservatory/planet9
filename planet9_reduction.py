@@ -21,6 +21,7 @@ from astropy import wcs
 from astropysics.coords import AngularCoordinate as angcor
 from fitgaussian import *
 import astropy
+from photutils.background import Background2D
 
 def make_im(datadir=dir,plot=True):
     '''
@@ -53,7 +54,7 @@ def make_im(datadir=dir,plot=True):
         #show_image(im_fix)
         #pdb.set_trace()
         newim = h.hcongrid((im[0].data-bias), im[0].header,refh)
-        bkg = Background(newim, (10, 10), filter_shape=(3, 3), method='median')
+        bkg = Background2D(newim, 3)
         newim -= bkg.background
         stack[:,:,i] = newim
 
@@ -93,7 +94,7 @@ def make_im(datadir=dir,plot=True):
         w = wcs.WCS(hdulist[0].header)
         i = 0
         for n in range(len(ras)):
-            if float(info['rMeanApMag'][n+1]) <= 19:
+            if float(info['rMeanApMag'][n+1])>=16.9 and float(info['rMeanApMag'][n+1])<=17.1:
                 ra0  = angcor(ras[n+1]).d
                 dec0 = angcor(decs[n+1]).d
                 world0 = np.array([[ra0, dec0]])
