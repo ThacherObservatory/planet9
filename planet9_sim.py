@@ -20,10 +20,10 @@ import robust as rb
 # plate_scale = 0.61		# Plate-scale, arcseconds per pixel
 # star_width = 10*sigma		# Width of star subframes
 # exptime = 1800	        # Exposure time in seconds
-
+# gain = 6.595
 
 def make_noise_frame(size=2048, bias=500, readnoise=20, background=21.3, mzp=22.5, exptime=1800.0,
-					 plate_scale=0.61):
+					 plate_scale=0.61,gain=6.595):
 	"""
 	Make an image of given size with specified noise properties.
 	Need to put background noise in here
@@ -36,8 +36,10 @@ def make_noise_frame(size=2048, bias=500, readnoise=20, background=21.3, mzp=22.
 	pixpersqarcsec = plate_scale**2
 	bgflux *= pixpersqarcsec
 
+	ecounts = bgflux * 6.595
+
 	# make background image
-	bgimage = np.random.poisson(bgflux, (size, size))
+	bgimage = (np.random.poisson(ecounts, (size, size))) / 6.595
 
 	# final image is sum of two images
 	image = readimage + bgimage
@@ -155,7 +157,7 @@ def add_star(starframe, star, loc=[0, 0], mag=0, mzp=22.5, exptime=1800.0, overs
 	return starframe
 
 
-def plot_field(image, siglo=1.0, sighi=3.0, write=False):
+def plot_field(image, siglo=-1.0, sighi=2.0, write=False):
     # Make a plot
     med = np.median(image)
     sig = rb.std(image)
@@ -242,7 +244,7 @@ def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=
 def planet9_movie(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
 					 plate_scale=0.61,width=10.0,background=21.8,mzp=23.5,exptime=1800.0,
 					 write=False,p9pos=[1024,1024],p9mag=22.0,dpos=30.0,angle=225.0,nimage=4,
-					 filename='P9',fps=2):
+					 filename='P9',fps=2,gain=6.595):
 
 	# get locations of stars
 	x, y = distribute(size=size*oversamp)
