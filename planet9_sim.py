@@ -157,7 +157,7 @@ def add_star(starframe, star, loc=[0, 0], mag=0, mzp=22.5, exptime=1800.0, overs
 	return starframe
 
 
-def plot_field(image, siglo=-2.0, sighi=2.0, write=False):
+def plot_field(image, siglo=-1.0, sighi=5.0, write=False):
     # Make a plot
     med = np.median(image)
     sig = rb.std(image)
