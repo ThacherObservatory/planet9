@@ -146,7 +146,7 @@ def add_star(starframe, star, loc=[0, 0], mag=0, mzp=22.5, exptime=1800.0, overs
 
 	# Add the star into the image
 	try:
-				starframe[startx:stopx, starty:stopy] += star_int[xb:xe, yb:ye]
+		starframe[startx:stopx, starty:stopy] += star_int[xb:xe, yb:ye]
 	except:
 		print startx, stopx, stopx - startx
 		print starty, stopy, stopy - starty
@@ -158,27 +158,27 @@ def add_star(starframe, star, loc=[0, 0], mag=0, mzp=22.5, exptime=1800.0, overs
 
 
 def plot_field(image, siglo=-1.0, sighi=5.0, write=False):
-    # Make a plot
-    med = np.median(image)
-    sig = rb.std(image)
-    plt.ion()
-    plt.figure(1)
-    plt.clf()
-    plt.imshow(image,vmin=med-siglo*sig,vmax=med+sighi*sig,cmap='gray',interpolation='none')
-    plt.gca().invert_yaxis()
-    if write:
-        plt.savefig("stars.png",dpi=300)
+	# Make a plot
+	med = np.median(image)
+	sig = rb.std(image)
+	plt.ion()
+	plt.figure(1)
+	plt.clf()
+	plt.imshow(image,vmin=med-siglo*sig,vmax=med+sighi*sig,cmap='gray',interpolation='none')
+	plt.gca().invert_yaxis()
+	if write:
+		plt.savefig("stars.png",dpi=300)
 
 
 def slice_plot(image):
-    # Show a cross section of the star in the image
-    xsize = np.shape(image)[0]
-    slice = image[xsize//2,:]
-    plt.ion()
-    plt.figure(2)
-    plt.clf()
-    plt.xlim(xsize)
-    plt.plot(slice)
+	# Show a cross section of the star in the image
+	xsize = np.shape(image)[0]
+	slice = image[xsize//2,:]
+	plt.ion()
+	plt.figure(2)
+	plt.clf()
+	plt.xlim(xsize)
+	plt.plot(slice)
 
 
 def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=3.0,plate_scale=0.61,width=10.0,
@@ -242,9 +242,9 @@ def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=
 
 
 def planet9_movie(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
-					 plate_scale=0.61,width=10.0,background=21.8,mzp=23.5,exptime=1800.0,
-					 write=False,p9pos=[1024,1024],p9mag=22.0,dpos=30.0,angle=225.0,nimage=4,
-					 filename='P9',fps=2,gain=6.595):
+					plate_scale=0.61,width=10.0,background=21.8,mzp=23.5,exptime=1800.0,
+					write=False,p9pos=[1024,1024],p9mag=22.0,dpos=30.0,angle=225.0,nimage=4,
+					filename='P9',fps=2,gain=6.595):
 
 	# get locations of stars
 	x, y = distribute(size=size*oversamp)
@@ -286,13 +286,12 @@ def planet9_sequence(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
 
 	for i in range(nimage):
 		image = make_field(size=size,x=x,y=y,oversamp=oversamp,bias=bias,readnoise=readnoise,seeing=seeing,
-				   plate_scale=plate_scale,width=width,background=background,mzp=mzp,
-								   exptime=exptime,write=write,p9pos=[p9_x[i],p9_y[i]],p9mag=p9mag)
+							plate_scale=plate_scale,width=width,background=background,mzp=mzp,
+							exptime=exptime,write=write,p9pos=[p9_x[i],p9_y[i]],p9mag=p9mag)
 
 		# write image to FITS
 		fits.writeto(filename+'_'+str(i+1)+'.fits', image, clobber = True)
 	return
-
 
 # run
 #if __name__ == '__main__':

@@ -21,53 +21,53 @@ import plot_params as pp
 
 
 def planet_speed(t, ra=90, dec=20, a=800):
-    """
-    Return proper motion of planet for given input parameters
-    t: day of year
-    ra: Right Ascencion in degrees
-    dec: Declination in degrees
-    a: Semi-major axis of planet (not accounting for Earth distance).
-    """
-    # Wrangle input variables
-    RA = np.radians(np.float(ra))
-    Dec = np.radians(np.float(dec))
-    Dis = np.float(a)
+	"""
+	Return proper motion of planet for given input parameters
+	t: day of year
+	ra: Right Ascencion in degrees
+	dec: Declination in degrees
+	a: Semi-major axis of planet (not accounting for Earth distance).
+	"""
+	# Wrangle input variables
+	RA = np.radians(np.float(ra))
+	Dec = np.radians(np.float(dec))
+	Dis = np.float(a)
 
-    # calculates width and height of planet 9's movement.
-    # Width and height are the distance from the ceter to poles, not absolute
-    # width / height
-    width = (3600.0 * 180.0) / (Dis * np.pi)
-    height = np.sin(Dec) * width
+	# calculates width and height of planet 9's movement.
+	# Width and height are the distance from the ceter to poles, not absolute
+	# width / height
+	width = (3600.0 * 180.0) / (Dis * np.pi)
+	height = np.sin(Dec) * width
 
-    # takes the derivative of x and y movement (parabolic equations)
-    x_deriv = width * 2 * np.pi / 365.2422 * \
+	# takes the derivative of x and y movement (parabolic equations)
+	x_deriv = width * 2 * np.pi / 365.2422 * \
 		np.cos((t + 195) * 2 * np.pi / 365.2422)
-    y_deriv = -height * 2 * np.pi / 365.2422 * \
+	y_deriv = -height * 2 * np.pi / 365.2422 * \
 		np.sin((t + 195) * 2 * np.pi / 365.2422)
 
-    # Calculates speed of planet 9 in Arcsecconds / hour
-    speed = (((x_deriv)**2 + (y_deriv)**(2))**(.500)) / 24
-    
-    return speed
+	# Calculates speed of planet 9 in Arcsecconds / hour
+	speed = (((x_deriv)**2 + (y_deriv)**(2))**(.500)) / 24
+
+	return speed
 
 
 
 def plot():
-    speed = []
-    t = np.linspace(0,365,num=3000)
-    for i in range(len(t)):
-        s = planet_speed(t[i])
-        speed = np.append(speed,s)
-    
-    #make plot
-    pp.plot_params()
-    plt.figure(1)
-    plt.clf
-    plt.ylim(0,0.3)
-    plt.xlim(0,365)
-    plt.xlabel('Day of Year', fontsize=17)
-    plt.ylabel('Planet Speed (arcseconds per hour)', fontsize=17)
-    plt.plot(t, speed, linewidth=3.0, color='r')
+	speed = []
+	t = np.linspace(0,365,num=3000)
+	for i in range(len(t)):
+		s = planet_speed(t[i])
+		speed = np.append(speed,s)
+
+	#make plot
+	pp.plot_params()
+	plt.figure(1)
+	plt.clf
+	plt.ylim(0,0.3)
+	plt.xlim(0,365)
+	plt.xlabel('Day of Year', fontsize=17)
+	plt.ylabel('Planet Speed (arcseconds per hour)', fontsize=17)
+	plt.plot(t, speed, linewidth=3.0, color='r')
 
 
 
