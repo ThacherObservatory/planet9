@@ -157,15 +157,20 @@ def add_star(starframe, star, loc=[0, 0], mag=0, mzp=22.5, exptime=1800.0, overs
 	return starframe
 
 
-def plot_field(image, siglo=-1.0, sighi=5.0, write=False):
+def plot_field(image, siglo=-1.0, sighi=5.0, write=False, stretch='linear',grid=False):
     # Make a plot
     med = np.median(image)
     sig = rb.std(image)
     plt.ion()
     plt.figure(1)
     plt.clf()
+    if stretch == 'sqrt':
+        image = np.sqrt(image)
     plt.imshow(image,vmin=med-siglo*sig,vmax=med+sighi*sig,cmap='gray',interpolation='none')
-    plt.gca().invert_yaxis()
+    if grid:
+        plt.rc('grid',linestyle='-',color='white')
+        plt.grid(which='both')
+    plt.gca().invert_yaxis()    
     if write:
         plt.savefig("stars.png",dpi=300)
 
@@ -183,7 +188,7 @@ def slice_plot(image):
 
 def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=3.0,plate_scale=0.61,width=10.0,
 			   background=21.3,mzp=22.5,exptime=1800.0,write=False,
-			   p9pos=[1024,1024],p9mag=23.0,plot=False):
+			   p9pos=[1024,1024],p9mag=23.0,plot=False,stretch='linear',grid=False):
 	"""
 	Make a field of stars with realistic noise properties
 	"""
@@ -235,7 +240,7 @@ def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=
 		fits.writeto('stars.fits', image, clobber = True)
 
 	if plot:
-		plot_field(image,write=write)
+		plot_field(image,write=write,stretch=stretch,grid=grid)
 
 	return image
 	#return np.sqrt(image)
@@ -244,7 +249,7 @@ def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=
 def planet9_movie(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
 					 plate_scale=0.61,width=10.0,background=21.8,mzp=23.5,exptime=1800.0,
 					 write=False,p9pos=[1024,1024],p9mag=22.0,dpos=30.0,angle=225.0,nimage=4,
-					 filename='P9',fps=2,gain=6.595):
+					 filename='P9',fps=2,gain=6.595,stretch='linear',grid=False):
 
 	# get locations of stars
 	x, y = distribute(size=size*oversamp)
@@ -257,10 +262,14 @@ def planet9_movie(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
 	for i in range(nimage):
 		  image = make_field(size=size,x=x,y=y,oversamp=oversamp,bias=bias,readnoise=readnoise,seeing=seeing,
 				   plate_scale=plate_scale,width=width,background=background,mzp=mzp,exptime=exptime,
-				   write=write,p9pos=[p9_x[i],p9_y[i]],p9mag=p9mag)
-		  image = np.sqrt(image)
+				   write=write,p9pos=[p9_x[i],p9_y[i]],p9mag=p9mag,stretch=stretch,grid=grid)
+       
 		  fname = 'p9_image%05d.png'%i
-		  plot_field(image)
+    
+             #grid attempt
+    		  
+		  
+        
 		  plt.savefig(fname,bbox_inches='tight',transparent=True, pad_inches=0,frameon=False,
 					dpi=150)
 		  os.system("convert "+fname+" -background black -flatten +matte "+fname)
