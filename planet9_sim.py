@@ -249,7 +249,7 @@ def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=
 def planet9_movie(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
 					plate_scale=0.61,width=10.0,background=21.8,mzp=23.5,exptime=1800.0,
 					write=False,p9pos=[1024,1024],p9mag=22.0,dpos=30.0,angle=225.0,nimage=4,
-					filename='P9',fps=2,gain=6.595):
+					filename='P9',fps=2,gain=6.595,stretch='linear',grid=False):
 
 	# get locations of stars
 	x, y = distribute(size=size*oversamp)
