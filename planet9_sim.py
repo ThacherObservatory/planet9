@@ -160,13 +160,13 @@ def add_star(starframe, star, loc=[0, 0], mag=0, mzp=22.5, exptime=1800.0, overs
 
 def plot_field(image, siglo=-1.0, sighi=5.0, write=False, stretch='linear',grid=False):
     # Make a plot
+    if stretch == 'sqrt':
+        image = np.sqrt(image)
     med = np.median(image)
     sig = rb.std(image)
     plt.ion()
     plt.figure(1)
     plt.clf()
-    if stretch == 'sqrt':
-        image = np.sqrt(image)
     plt.imshow(image,vmin=med-siglo*sig,vmax=med+sighi*sig,cmap='gray',interpolation='none')
     if grid:
         plt.rc('grid',linestyle='-',color='white')
