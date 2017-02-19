@@ -146,7 +146,8 @@ def add_star(starframe, star, loc=[0, 0], mag=0, mzp=22.5, exptime=1800.0, overs
 
 	# Add the star into the image
 	try:
-		starframe[startx:stopx, starty:stopy] += star_int[xb:xe, yb:ye]
+		starframe[np.int(startx):np.int(stopx), np.int(starty):np.int(stopy)] \
+                        += star_int[np.int(xb):np.int(xe), np.int(yb):np.int(ye)]
 	except:
 		print startx, stopx, stopx - startx
 		print starty, stopy, stopy - starty
@@ -246,7 +247,7 @@ def make_field(size=2048,x=None,y=None,oversamp=10,bias=500,readnoise=20,seeing=
 	#return np.sqrt(image)
 
 
-def planet9_movie(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
+def planet9_movie(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,siglo=-1.0,sighi=3.0,
 					plate_scale=0.61,width=10.0,background=21.8,mzp=23.5,exptime=1800.0,
 					write=False,p9pos=[1024,1024],p9mag=22.0,dpos=30.0,angle=225.0,nimage=4,
 					filename='P9',fps=2,gain=6.595,stretch='linear',grid=False):
@@ -266,18 +267,15 @@ def planet9_movie(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
        
 		  fname = 'p9_image%05d.png'%i
     
-             #grid attempt
-    		  
-		  
-        
+                  #grid attempt
+    		  plot_field(image,siglo=-1.0, sighi=5.0, write=False, stretch=stretch,grid=grid)
 		  plt.savefig(fname,bbox_inches='tight',transparent=True, pad_inches=0,frameon=False,
-					dpi=150)
+			      dpi=150)
 		  os.system("convert "+fname+" -background black -flatten +matte "+fname)
-
 	os.system("rm "+filename+".mp4")
 	os.system("ffmpeg -r "+str(fps)+" -i p9_image%05d.png -b:v 20M -vcodec libx264 -pix_fmt yuv420p -s 808x764 "+\
 			  filename+".mp4")
-	#os.system("rm p9_image*png")
+	os.system("rm p9_image*png")
 
 
 def planet9_sequence(size=2048,oversamp=10,bias=500,readnoise=20,seeing=3.0,
