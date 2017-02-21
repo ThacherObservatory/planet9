@@ -136,8 +136,8 @@ def make_source_frame(width=5.0):
     Variables:
         swidth_pix (float):
         size_pix (float):
-        x (array):
-        y (array):
+        x (array):              coordinates for the area to calculate the source
+        y (array):              "
 
     Returns:
         star (array):           array with simulated data for a single star
@@ -237,7 +237,8 @@ def add_source(starframe, sourceframe, loc, mag):
     y0 = loc[1]
 
     # compute total flux of star
-    flux = exptime * (10**(-0.4 * (mag - mzp))) * (oversamp**2)  # flux
+    # flux = exptime * (10**(-0.4 * (mag - mzp))) * (oversamp**2)  # flux
+    flux = exptime * (10**(-0.4 * (mag - mzp)))
 
     # turn into integers
     starnorm = sourceframe * flux
@@ -369,7 +370,6 @@ def make_field(x, y, background, p9pos, plot=False, grid=False, write=False):
     # create coordinate system
     starframe = make_blank_frame(oversamp)
     noiseframe = make_noise_frame(background)
-    pdb.set_trace()
     xs = np.shape(noiseframe)[0]
     ys = np.shape(noiseframe)[1]
 
@@ -406,13 +406,12 @@ def make_field(x, y, background, p9pos, plot=False, grid=False, write=False):
     # print "Verify poission noise, line 393"
     # pdb.set_trace()
     image = stars_noise + noiseframe
-    pdb.set_trace()
     # render image and save it
     if write:
         fits.writeto('stars.fits', image, clobber=True)
 
     if plot:
-        plot_field(image, write, grid, stretch)
+        plot_field(image, grid, write)
 
     return image
     # return np.sqrt(image)
@@ -469,7 +468,7 @@ def planet9_movie(nimage=4, fps=2, grid=False, write=False, filename='P9'):
         fname = 'p9_image%05d.png' % i
 
         # grid attempt
-        plot_field(image, siglo, sighi, grid, write)
+        plot_field(image, grid, write)
         plt.savefig(fname, bbox_inches='tight', transparent=True, pad_inches=0, frameon=False,
                     dpi=150)
         os.system("convert " + fname + " -background black -flatten +matte " + fname)
