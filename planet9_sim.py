@@ -80,7 +80,7 @@ p9mag = 22.0
 p9pos = [1024, 1024]
 
 
-def make_noise_frame():
+def make_noise_frame(background):
     """Make an image of given size with specified noise properties.
     Need to put background noise in here
 
@@ -339,7 +339,7 @@ def slice_plot(image):
     plt.plot(slice)
 
 
-def make_field(x, y, p9pos, plot=False, grid=False, write=False):
+def make_field(x, y, background, p9pos, plot=False, grid=False, write=False):
     """Make a field of stars with realistic noise properties
 
     Args:
@@ -368,7 +368,7 @@ def make_field(x, y, p9pos, plot=False, grid=False, write=False):
 
     # create coordinate system
     starframe = make_blank_frame(oversamp)
-    noiseframe = make_noise_frame()
+    noiseframe = make_noise_frame(background)
     pdb.set_trace()
     xs = np.shape(noiseframe)[0]
     ys = np.shape(noiseframe)[1]
@@ -464,7 +464,7 @@ def planet9_movie(nimage=4, fps=2, grid=False, write=False, filename='P9'):
 
     for i in range(nimage):
         p9pos = [p9_x[i], p9_y[i]]
-        image = make_field(x, y, p9pos)
+        image = make_field(x, y, background, p9pos)
 
         fname = 'p9_image%05d.png' % i
 
