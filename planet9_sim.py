@@ -32,7 +32,7 @@ loc (array):            coordinate pair for the simulated star
 mag (float):            apparent magnitude of the simulated star
 *mzp (float):           mean zero-point value
 *nimage (int):          number of frames to generate
-*oversamp (int):        ???
+*oversamp (int):        scaling factor for rendering the simulated data
 *p9mag (float):         simulated planet 9 apparent magnitude
 *p9pos (array):         starting coordinate pair for simulated planet 9
 *plate_scale (float):   width of 1 camera pixel in arcseconds
@@ -49,8 +49,6 @@ starframe (array):      array to store simulated image data
 ^write (bool):          whether or not to save the chart as an image file
 ^write (bool):          whether or not to save to an image file
 ^write (bool):          whether or not to write the video to a file
-x (???):                ???
-y (???):                ???
 """
 
 # Image frame settings
