@@ -246,13 +246,12 @@ def add_source(starframe, sourceframe, loc, mag):
 
     # Do this later
     # include signal noise
-    star_shape = np.shape(star_int)
     # poisson_star = np.random.poisson(star_int.flatten())
-    # poisson_star = np.reshape(poisson_star,star_shape)
+    # poisson_star = np.reshape(poisson_star,np.shape(star_int))
 
     # size of star frame
-    xs = star_shape[0]
-    ys = star_shape[0]
+    xs = np.shape(star_int)[0]
+    ys = np.shape(star_int)[0]
 
     # size of frame
     xf = np.shape(starframe)[0]
