@@ -57,6 +57,8 @@ size = int(2048)
 # Rendering settings
 oversamp = 10
 stretch = 'linear'
+siglo = -1.0
+sighi = 5.0
 
 # Virtual camera settings
 bias = 500
@@ -211,9 +213,9 @@ def add_source(starframe, sourceframe, loc, mag):
         x0 (int):
         y0 (int):
         flux (float):
-        starnorm (array):
-        star_int (array):       starnorm, reduced to integers
-        star_shape (array):
+        starnorm (array):       generic star curve adjusted for individual flux
+        star_int (array):       starnorm, reduced to integers and 1 dimension
+        star_shape (tuple):     dimensions of starnorm
         xs (???):
         ys (???):
         xf (???):
@@ -294,7 +296,7 @@ def add_source(starframe, sourceframe, loc, mag):
     return starframe
 
 
-def plot_field(image, siglo=-1.0, sighi=5.0, grid=False, write=False):
+def plot_field(image, grid=False, write=False):
     """generates a plot to display the simulated field image
 
     Args:
@@ -367,6 +369,7 @@ def make_field(x, y, p9pos, plot=False, grid=False, write=False):
     # create coordinate system
     starframe = make_blank_frame(oversamp)
     noiseframe = make_noise_frame()
+    pdb.set_trace()
     xs = np.shape(noiseframe)[0]
     ys = np.shape(noiseframe)[1]
 
@@ -396,14 +399,14 @@ def make_field(x, y, p9pos, plot=False, grid=False, write=False):
 
     # add poisson noise to the star image
     shape = np.shape(starframe)
-    star_int = starframe.astype('int')
-    star_noise = np.random.poisson(star_int.flatten())
-    star_noise = np.reshape(star_noise, shape)
+    stars_int = np.round(starframe).astype('int')
+    stars_noise = np.random.poisson(stars_int.flatten())
+    stars_noise = np.reshape(stars_noise, shape)
 
     # print "Verify poission noise, line 393"
     # pdb.set_trace()
-    image = star_noise + noiseframe
-
+    image = stars_noise + noiseframe
+    pdb.set_trace()
     # render image and save it
     if write:
         fits.writeto('stars.fits', image, clobber=True)
@@ -431,14 +434,12 @@ def planet9_path(nimage):
     return p9_x, p9_y
 
 
-def planet9_movie(nimage=4, fps=2, siglo=-1.0, sighi=5.0, grid=False, write=False, filename='P9'):
+def planet9_movie(nimage=4, fps=2, grid=False, write=False, filename='P9'):
     """create a video from simulated field images
 
     Args:
         nimage (int):           number of frames to generate
         fps (float):            frames per second for the video
-        siglo (float):          ???
-        sighi (float):          ???
         grid (bool):            whether or not to overlay a grid
         write (bool):           whether or not to write the video to a file
         filename (str):         filename for saving video file
