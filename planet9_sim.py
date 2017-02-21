@@ -126,7 +126,7 @@ def make_blank_frame(oversamp):
     return blankframe
 
 
-def make_source_frame(width=5.0):
+def make_source_frame():
     """Make a gaussian "star" in the center of a frame
     Normalize to a flux of 1
 
