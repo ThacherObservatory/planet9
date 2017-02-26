@@ -81,6 +81,19 @@ p9mag = 22.0
 p9pos = [1024, 1024]
 
 
+def load_data():
+    """Initialize data and variables for the script.
+    Loads TRILEGAL data
+
+    Returns:
+        data (df):              Pandas dataframe of star data
+    """
+    # load TRILEGAL data
+    data = tr.info_col('V')
+
+    return data
+
+
 def make_noise_frame(background):
     """Make an image of given size with specified noise properties.
     Need to put background noise in here
@@ -308,6 +321,15 @@ def plot_field(image, grid=False, write=False):
         grid (bool):            whether or not to overlay a grid
         write (bool):           whether or not to save the chart as an image file
     """
+    # progress bar
+    tasks = 2
+    if grid:
+        tasks += 1
+    if write:
+        tasks += 1
+    pbar = tqdm(desc='Plotting image', total=tasks, unit='operation', leave=False)
+    pbar.write('	Plotting frame...')
+
     # Make a plot
     if stretch == 'sqrt':
         image = np.sqrt(image)
@@ -318,12 +340,18 @@ def plot_field(image, grid=False, write=False):
     plt.clf()
     plt.imshow(image, vmin=med - siglo * sig, vmax=med +
                sighi * sig, cmap='gray', interpolation='none')
+    pbar.update(1)
     if grid:
         plt.rc('grid', linestyle='-', color='white')
         plt.grid(which='both')
+        pbar.update(1)
     plt.gca().invert_yaxis()
+    pbar.update(1)
     if write:
         plt.savefig("stars.png", dpi=300)
+        pbar.update(1)
+    pbar.write('	Plot rendered.')
+    pbar.close()
 
 
 def slice_plot(image):
@@ -341,11 +369,16 @@ def slice_plot(image):
     plt.plot(slice)
 
 
-def make_field(x, y, background, p9pos, oversamp=oversamp, plot=False, grid=False, write=False):
+def make_field(source_data, x, y, background, p9pos, oversamp=oversamp, plot=False, grid=False, write=False):
     """Make a field of stars with realistic noise properties
 
     Args:
+        source_data
+        x
+        y
+        background
         p9pos (array):          starting coordinate pair for simulated planet 9
+        oversamp
         plot (bool):            whether or not to plot the simulated image
         grid (bool):            whether or not to overlay a grid
         write (bool):           whether or not to save to an image file
@@ -384,19 +417,17 @@ def make_field(x, y, background, p9pos, oversamp=oversamp, plot=False, grid=Fals
     sourceframe = make_source_frame()
     frame_pbar.update(1)
 
-    # load TRILEGAL data
-    tri_data = tr.info_col('V')
-    frame_pbar.update(1)
-
     # generate stars
     frame_pbar.refresh()
+    frame_pbar.write('	Simulating stars...')
     pbar = tqdm(desc='Simulating stars', total=tr.info_len(), unit='star', leave=False)
     for i in range(tr.info_len()):
         loc = [x[i], y[i]]
-        mag = tri_data.iloc[i]['V']
+        mag = source_data.iloc[i]['V']
         starframe = add_source(starframe, sourceframe, loc, mag)
         pbar.update(1)
     pbar.close()
+    frame_pbar.write('	Stars simulated.')
     frame_pbar.update(1)
 
     # add p9 in
@@ -476,17 +507,23 @@ def planet9_movie(nimage=4, fps=2, grid=False, write=False, filename='P9'):
         fname (str):            filename format for individual frames
     """
     # proress bar
-    master_pbar = tqdm(desc='Simulating', total=(nimage + 4), unit='frame')
+    master_pbar = tqdm(desc='Simulation progress', total=(nimage + 6), unit='operation')
     pbar = tqdm(desc='Iterating frames', total=nimage, unit='operation', leave=False)
 
     # initialize persistent data
+    master_pbar.write('Loading TRILEGAL data...')
+    source_data = load_data()
+    master_pbar.write('TRILEGAL data loaded.')
+    master_pbar.update(1)
+
     p9_x, p9_y = planet9_path(nimage)
     x, y = distribute_oversamp()
     master_pbar.update(1)
 
     for i in range(nimage):
+        pbar.write('Rendering frame %d...' % (i + 1))
         p9pos = [p9_x[i], p9_y[i]]
-        image = make_field(x, y, background, p9pos)
+        image = make_field(source_data, x, y, background, p9pos)
 
         fname = 'p9_image%02d.png' % i
 
@@ -494,24 +531,29 @@ def planet9_movie(nimage=4, fps=2, grid=False, write=False, filename='P9'):
         plot_field(image, grid, write)
         plt.savefig(fname, bbox_inches='tight', transparent=True, pad_inches=0, frameon=False,
                     dpi=150)
+        master_pbar.update(1)
         os.system("convert " + fname + " -background black -flatten +matte " + fname)
         pbar.update(1)
         master_pbar.update(1)
+        pbar.write('Frame %d rendered.' % (i + 1))
     pbar.close()
 
     # remove previous movie
     os.remove(filename + ".mp4")
     master_pbar.update(1)
+    master_pbar.write('Previous movie file deleted.')
 
     # export new movie with FFmpeg
-    os.system("ffmpeg -r " + str(fps) + " -i p9_image%02d.png -b:v 20M -vcodec libx264 -pix_fmt yuv420p -s 808x764 " +
+    os.system("ffmpeg -loglevel quiet -r " + str(fps) + " -i p9_image%02d.png -b:v 20M -vcodec libx264 -pix_fmt yuv420p -s 808x764 " +
               filename + ".mp4")
+    master_pbar.write('Movie exported.')
     master_pbar.update(1)
 
     # delete frame images
     #("rm p9_image*png")
     for f in glob.glob("p9_image??.png"):
         os.remove(f)
+    master_pbar.write('Frame images deleted.')
     master_pbar.update(1)
 
 
