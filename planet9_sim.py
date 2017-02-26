@@ -7,6 +7,7 @@ from astropy.io import fits
 from rebin import rebin
 import pdb
 import os
+import glob
 import robust as rb
 
 
@@ -134,22 +135,22 @@ def make_source_frame():
         width (float):          width of area to calculate to render star
 
     Variables:
-        swidth_pix (float):
-        size_pix (float):
+        source_res (float):       width in pixels of the simulated star
+        frame_res (float):      width in pixels of the field to calculate the gaussian
         x (array):              coordinates for the area to calculate the source
         y (array):              "
 
     Returns:
         star (array):           array with simulated data for a single star
     """
-    swidth_pix = seeing / plate_scale
-    size_pix = np.round(swidth_pix * width / 2.0).astype('int')
-    x = np.arange(-size_pix, size_pix, 1, int)
+    source_res = seeing / plate_scale
+    frame_res = np.round(source_res * width / 2.0).astype('int')
+    x = np.arange(-frame_res, frame_res, 1, int)
     y = x[:, np.newaxis]
-    star = np.exp(-4 * np.log(2) * (x**2 + y**2) / swidth_pix**2)
-    star /= np.sum(star)
+    sourceframe = np.exp(-4 * np.log(2) * (x**2 + y**2) / source_res**2)
+    sourceframe /= np.sum(sourceframe)
 
-    return star
+    return sourceframe
 
 
 def coord_gen(coord_limit):
@@ -190,8 +191,8 @@ def distribute_oversamp():
     """Expands generated star coordinate-space for oversampling
 
     Variables:
-        x (array):
-        y (array):
+        x (array):              x-coordinates for simulated stars
+        y (array):              y-coordinates for simulated stars
     """
 
     # get locations of stars
@@ -214,7 +215,7 @@ def add_source(starframe, sourceframe, loc, mag):
         y0 (int):
         flux (float):
         starnorm (array):       generic star curve adjusted for individual flux
-        star_int (array):       starnorm, reduced to integers and 1 dimension
+        source_int (array):       starnorm, reduced to integers and 1 dimension
         star_shape (tuple):     dimensions of starnorm
         xs (???):
         ys (???):
@@ -237,21 +238,22 @@ def add_source(starframe, sourceframe, loc, mag):
     y0 = loc[1]
 
     # compute total flux of star
-    # flux = exptime * (10**(-0.4 * (mag - mzp))) * (oversamp**2)  # flux
-    flux = exptime * (10**(-0.4 * (mag - mzp)))
+    flux = exptime * (10**(-0.4 * (mag - mzp))) * (oversamp**2)  # flux
 
     # turn into integers
-    starnorm = sourceframe * flux
-    star_int = np.round(starnorm)
+    source_convolved = sourceframe * flux
+    source_convolved = rebin(source_convolved, np.shape(
+        source_convolved)[0], np.shape(source_convolved)[1])
+    source_int = np.round(source_convolved).astype(int)
 
     # Do this later
     # include signal noise
-    # poisson_star = np.random.poisson(star_int.flatten())
-    # poisson_star = np.reshape(poisson_star,np.shape(star_int))
+    # poisson_star = np.random.poisson(source_int.flatten())
+    # poisson_star = np.reshape(poisson_star,np.shape(source_int))
 
     # size of star frame
-    xs = np.shape(star_int)[0]
-    ys = np.shape(star_int)[0]
+    xs = np.shape(source_int)[0]
+    ys = np.shape(source_int)[0]
 
     # size of frame
     xf = np.shape(starframe)[0]
@@ -284,13 +286,13 @@ def add_source(starframe, sourceframe, loc, mag):
 
     # Add the star into the image
     try:
-        starframe[np.int(startx):np.int(stopx), np.int(starty):np.int(stopy)] \
-            += star_int[np.int(xb):np.int(xe), np.int(yb):np.int(ye)]
+        starframe[np.round(startx).astype(int):np.round(stopx).astype(int), np.round(starty).astype(int):np.round(stopy).astype(int)] \
+            += source_int[np.round(xb).astype(int):np.round(xe).astype(int), np.round(yb).astype(int):np.round(ye).astype(int)]
     except:
-        print startx, stopx, stopx - startx
-        print starty, stopy, stopy - starty
-        print xb, xe, xe - xb
-        print yb, ye, ye - yb
+        print(startx, stopx, stopx - startx)
+        print(starty, stopy, stopy - starty)
+        print(xb, xe, xe - xb)
+        print(yb, ye, ye - yb)
         pdb.set_trace()
         pass
     return starframe
@@ -339,7 +341,7 @@ def slice_plot(image):
     plt.plot(slice)
 
 
-def make_field(x, y, background, p9pos, plot=False, grid=False, write=False):
+def make_field(x, y, background, p9pos, oversamp=oversamp, plot=False, grid=False, write=False):
     """Make a field of stars with realistic noise properties
 
     Args:
@@ -355,74 +357,96 @@ def make_field(x, y, background, p9pos, plot=False, grid=False, write=False):
         mag (float):
         starframe (array):
         shape (tuple):
-        star_int (tuple):
+        source_int (tuple):
         star_noise (???):
         star_noise (???):
         tri_data (dataframe):
-        xs (array):
-        ys (array):
 
     Returns:
         image (array):          array containing the simulated image data
     """
 
-    # create coordinate system
+    # progress bar for the frame
+    tasks = 9
+    if plot:
+        tasks += 1
+    if grid:
+        tasks += 1
+    if write:
+        tasks += 1
+    frame_pbar = tqdm(desc='Rendering frame', total=tasks, unit='operation', leave=False)
+
+    # create frame
     starframe = make_blank_frame(oversamp)
-    noiseframe = make_noise_frame(background)
-    xs = np.shape(noiseframe)[0]
-    ys = np.shape(noiseframe)[1]
+    frame_pbar.update(1)
 
-    # do something if no coordinates
-
+    # create convolution frame
     sourceframe = make_source_frame()
+    frame_pbar.update(1)
 
+    # load TRILEGAL data
     tri_data = tr.info_col('V')
-
-    # progress bar
-    pbar = tqdm(desc='Placing stars', total=tr.info_len(), unit='stars')
+    frame_pbar.update(1)
 
     # generate stars
+    frame_pbar.refresh()
+    pbar = tqdm(desc='Simulating stars', total=tr.info_len(), unit='star', leave=False)
     for i in range(tr.info_len()):
         loc = [x[i], y[i]]
         mag = tri_data.iloc[i]['V']
         starframe = add_source(starframe, sourceframe, loc, mag)
         pbar.update(1)
     pbar.close()
+    frame_pbar.update(1)
 
     # add p9 in
     starframe = add_source(starframe, sourceframe, p9pos, p9mag)
+    frame_pbar.update(1)
+
+    # create noise frame
+    noiseframe = make_noise_frame(background)
+    frame_pbar.update(1)
 
     # rebin oversampled data
     if oversamp > 1:
-        starframe = rebin(starframe, xs, ys)
+        starframe = rebin(starframe, np.shape(noiseframe)[0], np.shape(noiseframe)[1])
+        frame_pbar.update(1)
+
+    # convert data to integers
+    stars_int = np.round(starframe).astype('int')
+    frame_pbar.update(1)
 
     # add poisson noise to the star image
-    shape = np.shape(starframe)
-    stars_int = np.round(starframe).astype('int')
     stars_noise = np.random.poisson(stars_int.flatten())
-    stars_noise = np.reshape(stars_noise, shape)
+    stars_noise = np.reshape(stars_noise, np.shape(starframe))
+    frame_pbar.update(1)
 
-    # print "Verify poission noise, line 393"
+    # print("Verify poission noise, line 393")
     # pdb.set_trace()
     image = stars_noise + noiseframe
+    frame_pbar.update(1)
+
     # render image and save it
     if write:
         fits.writeto('stars.fits', image, clobber=True)
+        frame_pbar.update(1)
 
     if plot:
         plot_field(image, grid, write)
+        frame_pbar.update(1)
+
+    frame_pbar.close()
 
     return image
-    # return np.sqrt(image)
 
 
 def planet9_path(nimage):
     """Generate planet 9 coordinates
 
     Variables:
-        t (array):
-        p9_x (array):
-        p9_y (array):
+        t (array):              array of position for planet 9 throughout frames
+        p9_x (array):           set of x-coordinates for planet 9
+        p9_y (array):           set of y-coordinates for planet 9
     """
     # get locations of P9, move it for each frame
     t = np.arange(0, dpos * nimage, dpos)
@@ -443,28 +467,28 @@ def planet9_movie(nimage=4, fps=2, grid=False, write=False, filename='P9'):
         filename (str):         filename for saving video file
 
     Variables:
-        x (array):
-        y (array):
-        t (array):
-        p9_x (array):
-        p9_y (array):
+        x (array):              oversampled x-coordinates for simulated image
+        y (array):              oversampled y-coordinates for simulated image
+        p9_x (array):           set of x-coordinates for planet 9
+        p9_y (array):           set of y-coordinates for planet 9
         p9pos (array):          current coordinate pair for planet 9
-        image (array):
-        fname (str):
+        image (array):          simulated image data
+        fname (str):            filename format for individual frames
     """
+    # proress bar
+    master_pbar = tqdm(desc='Simulating', total=(nimage + 4), unit='frame')
+    pbar = tqdm(desc='Iterating frames', total=nimage, unit='operation', leave=False)
 
     # initialize persistent data
     p9_x, p9_y = planet9_path(nimage)
     x, y = distribute_oversamp()
-
-    # proress bar
-    pbar = tqdm(desc='Rendering frames', total=nimage, unit='frame')
+    master_pbar.update(1)
 
     for i in range(nimage):
         p9pos = [p9_x[i], p9_y[i]]
         image = make_field(x, y, background, p9pos)
 
-        fname = 'p9_image%05d.png' % i
+        fname = 'p9_image%02d.png' % i
 
         # grid attempt
         plot_field(image, grid, write)
@@ -472,11 +496,23 @@ def planet9_movie(nimage=4, fps=2, grid=False, write=False, filename='P9'):
                     dpi=150)
         os.system("convert " + fname + " -background black -flatten +matte " + fname)
         pbar.update(1)
+        master_pbar.update(1)
     pbar.close()
-    os.system("rm " + filename + ".mp4")
-    os.system("ffmpeg -r " + str(fps) + " -i p9_image%05d.png -b:v 20M -vcodec libx264 -pix_fmt yuv420p -s 808x764 " +
+
+    # remove previous movie
+    os.remove(filename + ".mp4")
+    master_pbar.update(1)
+
+    # export new movie with FFmpeg
+    os.system("ffmpeg -r " + str(fps) + " -i p9_image%02d.png -b:v 20M -vcodec libx264 -pix_fmt yuv420p -s 808x764 " +
               filename + ".mp4")
-    os.system("rm p9_image*png")
+    master_pbar.update(1)
+
+    # delete frame images
+    #("rm p9_image*png")
+    for f in glob.glob("p9_image??.png"):
+        os.remove(f)
+    master_pbar.update(1)
 
 
 # run
