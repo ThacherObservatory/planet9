@@ -7,6 +7,8 @@ from astropy.io import fits
 from rebin import rebin
 import pdb
 import os
+import sys
+import gc
 import glob
 import robust as rb
 
@@ -77,7 +79,7 @@ width = 10.0
 # Planet 9 variables
 angle = 225.0
 dpos = 30.0
-p9mag = 22.0
+p9mag = 21.0
 p9pos = [1024, 1024]
 
 
@@ -156,7 +158,7 @@ def make_source_frame():
     Returns:
         star (array):           array with simulated data for a single star
     """
-    source_res = seeing / plate_scale
+    source_res = (seeing / plate_scale) * oversamp
     frame_res = np.round(source_res * width / 2.0).astype('int')
     x = np.arange(-frame_res, frame_res, 1, int)
     y = x[:, np.newaxis]
@@ -284,7 +286,6 @@ def add_source(starframe, sourceframe, loc, mag):
         xe = stopx - startx
     else:
         xe = xs
-
     starty = max(0, y0 - ys / 2)
     if starty == 0:
         yb = ys / 2 - y0
@@ -328,7 +329,7 @@ def plot_field(image, grid=False, write=False):
     if write:
         tasks += 1
     pbar = tqdm(desc='Plotting image', total=tasks, unit='operation', leave=False)
-    pbar.write('	Plotting frame...')
+    pbar.write('		Plotting frame...')
 
     # Make a plot
     if stretch == 'sqrt':
@@ -341,6 +342,7 @@ def plot_field(image, grid=False, write=False):
     plt.imshow(image, vmin=med - siglo * sig, vmax=med +
                sighi * sig, cmap='gray', interpolation='none')
     pbar.update(1)
+
     if grid:
         plt.rc('grid', linestyle='-', color='white')
         plt.grid(which='both')
@@ -350,7 +352,7 @@ def plot_field(image, grid=False, write=False):
     if write:
         plt.savefig("stars.png", dpi=300)
         pbar.update(1)
-    pbar.write('	Plot rendered.')
+    pbar.write('		Plot rendered.')
     pbar.close()
 
 
@@ -394,6 +396,8 @@ def make_field(source_data, x, y, background, p9pos, oversamp=oversamp, plot=Fal
         star_noise (???):
         star_noise (???):
         tri_data (dataframe):
+        pbar (tqdm):            progress bar for generating the frame
+        sim_pbar (tqdm):        progress bar for simulating data
 
     Returns:
         image (array):          array containing the simulated image data
@@ -407,66 +411,66 @@ def make_field(source_data, x, y, background, p9pos, oversamp=oversamp, plot=Fal
         tasks += 1
     if write:
         tasks += 1
-    frame_pbar = tqdm(desc='Rendering frame', total=tasks, unit='operation', leave=False)
+    pbar = tqdm(desc='Rendering frame', total=tasks, unit='operation', leave=False)
 
     # create frame
     starframe = make_blank_frame(oversamp)
-    frame_pbar.update(1)
+    pbar.update(1)
 
     # create convolution frame
     sourceframe = make_source_frame()
-    frame_pbar.update(1)
+    pbar.update(1)
+    pbar.refresh()
 
     # generate stars
-    frame_pbar.refresh()
-    frame_pbar.write('	Simulating stars...')
-    pbar = tqdm(desc='Simulating stars', total=tr.info_len(), unit='star', leave=False)
+    pbar.write('		Simulating stars...')
+    sim_pbar = tqdm(desc='Simulating stars', total=tr.info_len(), unit='star', leave=False)
     for i in range(tr.info_len()):
         loc = [x[i], y[i]]
         mag = source_data.iloc[i]['V']
         starframe = add_source(starframe, sourceframe, loc, mag)
-        pbar.update(1)
-    pbar.close()
-    frame_pbar.write('	Stars simulated.')
-    frame_pbar.update(1)
+        sim_pbar.update(1)
+    sim_pbar.close()
+    pbar.write('		Stars simulated.')
+    pbar.update(1)
 
     # add p9 in
     starframe = add_source(starframe, sourceframe, p9pos, p9mag)
-    frame_pbar.update(1)
+    pbar.update(1)
 
     # create noise frame
     noiseframe = make_noise_frame(background)
-    frame_pbar.update(1)
+    pbar.update(1)
 
     # rebin oversampled data
     if oversamp > 1:
         starframe = rebin(starframe, np.shape(noiseframe)[0], np.shape(noiseframe)[1])
-        frame_pbar.update(1)
+        pbar.update(1)
 
     # convert data to integers
     stars_int = np.round(starframe).astype('int')
-    frame_pbar.update(1)
+    pbar.update(1)
 
     # add poisson noise to the star image
     stars_noise = np.random.poisson(stars_int.flatten())
     stars_noise = np.reshape(stars_noise, np.shape(starframe))
-    frame_pbar.update(1)
+    pbar.update(1)
 
     # print("Verify poission noise, line 393")
     # pdb.set_trace()
     image = stars_noise + noiseframe
-    frame_pbar.update(1)
+    pbar.update(1)
 
     # render image and save it
     if write:
         fits.writeto('stars.fits', image, clobber=True)
-        frame_pbar.update(1)
+        pbar.update(1)
 
     if plot:
         plot_field(image, grid, write)
-        frame_pbar.update(1)
+        pbar.update(1)
 
-    frame_pbar.close()
+    pbar.close()
 
     return image
 
@@ -487,6 +491,35 @@ def planet9_path(nimage):
     return p9_x, p9_y
 
 
+def frame_render(source_data, x, y, p9pos, grid, write, i, pbar):
+    """Render a single frame of simulated noise and data, plus planet 9 and save it
+
+    Args:
+        source_data
+        x
+        y
+        p9pos
+        i
+        pbar (tqdm):            progress bar
+
+    Variables:
+        image (array):          array of the simulated data
+        fname (str):            filename format for image frames
+    """
+    pbar.write('	Rendering frame %d...' % (i + 1))
+    image = make_field(source_data, x, y, background, p9pos)
+
+    fname = 'p9_image%02d.png' % i
+
+    # grid attempt
+    plot_field(image, grid, write)
+    plt.savefig(fname, bbox_inches='tight', transparent=True, pad_inches=0, frameon=False,
+                dpi=150)
+    os.system("convert " + fname + " -background black -flatten +matte " + fname)
+    pbar.update(1)
+    pbar.write('	Frame %d rendered.' % (i + 1))
+
+
 def planet9_movie(nimage=4, fps=2, grid=False, write=False, filename='P9'):
     """create a video from simulated field images
 
@@ -503,58 +536,50 @@ def planet9_movie(nimage=4, fps=2, grid=False, write=False, filename='P9'):
         p9_x (array):           set of x-coordinates for planet 9
         p9_y (array):           set of y-coordinates for planet 9
         p9pos (array):          current coordinate pair for planet 9
-        image (array):          simulated image data
-        fname (str):            filename format for individual frames
+        pbar (tqdm):            progress bar for overall process
+        frames_pbar (tqdm):     progress bar for generating frames
     """
     # proress bar
-    master_pbar = tqdm(desc='Simulation progress', total=(nimage + 6), unit='operation')
-    pbar = tqdm(desc='Iterating frames', total=nimage, unit='operation', leave=False)
+    pbar = tqdm(desc='Simulation progress', total=(nimage + 5), unit='operation')
 
     # initialize persistent data
-    master_pbar.write('Loading TRILEGAL data...')
+    pbar.write('Loading TRILEGAL data...')
     source_data = load_data()
-    master_pbar.write('TRILEGAL data loaded.')
-    master_pbar.update(1)
+    pbar.write('TRILEGAL data loaded.')
+    pbar.update(1)
 
     p9_x, p9_y = planet9_path(nimage)
     x, y = distribute_oversamp()
-    master_pbar.update(1)
+    pbar.update(1)
 
+    # render frames
+    frames_pbar = tqdm(desc='Iterating frames', total=nimage, unit='operation', leave=False)
     for i in range(nimage):
-        pbar.write('Rendering frame %d...' % (i + 1))
-        p9pos = [p9_x[i], p9_y[i]]
-        image = make_field(source_data, x, y, background, p9pos)
-
-        fname = 'p9_image%02d.png' % i
-
-        # grid attempt
-        plot_field(image, grid, write)
-        plt.savefig(fname, bbox_inches='tight', transparent=True, pad_inches=0, frameon=False,
-                    dpi=150)
-        master_pbar.update(1)
-        os.system("convert " + fname + " -background black -flatten +matte " + fname)
+        frame_render(source_data, x, y, [p9_x[i], p9_y[i]], grid, write, i, frames_pbar)
         pbar.update(1)
-        master_pbar.update(1)
-        pbar.write('Frame %d rendered.' % (i + 1))
-    pbar.close()
+    frames_pbar.close()
 
     # remove previous movie
     os.remove(filename + ".mp4")
-    master_pbar.update(1)
-    master_pbar.write('Previous movie file deleted.')
+    pbar.update(1)
+    pbar.write('Previous movie file deleted.')
 
     # export new movie with FFmpeg
-    os.system("ffmpeg -loglevel quiet -r " + str(fps) + " -i p9_image%02d.png -b:v 20M -vcodec libx264 -pix_fmt yuv420p -s 808x764 " +
+    os.system("ffmpeg -loglevel quiet -r " + str(fps) + " -i p9_image%02d.png" +
+              " -b:v 20M -vcodec libx264 -pix_fmt yuv420p -s 808x764 " +
               filename + ".mp4")
-    master_pbar.write('Movie exported.')
-    master_pbar.update(1)
+    pbar.write('Movie exported.')
+    pbar.update(1)
 
     # delete frame images
-    #("rm p9_image*png")
     for f in glob.glob("p9_image??.png"):
         os.remove(f)
-    master_pbar.write('Frame images deleted.')
-    master_pbar.update(1)
+    pbar.write('Frame images deleted.')
+    pbar.update(1)
+
+    pbar.close()
+    gc.collect()
+    sys.modules[__name__].__dict__.clear()
 
 
 # run
