@@ -463,6 +463,7 @@ def make_field(source_data, x, y, background, p9pos, oversamp=oversamp, plot=Fal
 
     # render image and save it
     if write:
+        fname = 'p9_image%02d.fits' % it_num
         fits.writeto('stars.fits', image, clobber=True)
         pbar.update(1)
 
@@ -491,7 +492,7 @@ def planet9_path(nimage):
     return p9_x, p9_y
 
 
-def frame_render(source_data, x, y, p9pos, grid, write, i, pbar):
+def frame_render(source_data, x, y, p9pos, grid, write, pbar):
     """Render a single frame of simulated noise and data, plus planet 9 and save it
 
     Args:
@@ -506,10 +507,10 @@ def frame_render(source_data, x, y, p9pos, grid, write, i, pbar):
         image (array):          array of the simulated data
         fname (str):            filename format for image frames
     """
-    pbar.write('	Rendering frame %d...' % (i + 1))
-    image = make_field(source_data, x, y, background, p9pos)
+    pbar.write('	Rendering frame %d...' % (it_num + 1))
+    image = make_field(source_data, x, y, background, p9pos, write)
 
-    fname = 'p9_image%02d.png' % i
+    fname = 'p9_image%02d.png' % it_num
 
     # grid attempt
     plot_field(image, grid, write)
@@ -517,10 +518,10 @@ def frame_render(source_data, x, y, p9pos, grid, write, i, pbar):
                 dpi=150)
     os.system("convert " + fname + " -background black -flatten +matte " + fname)
     pbar.update(1)
-    pbar.write('	Frame %d rendered.' % (i + 1))
+    pbar.write('	Frame %d rendered.' % (it_num + 1))
 
 
-def planet9_movie(nimage=4, fps=2, grid=False, write=False, filename='P9'):
+def planet9_movie(nimage=4, fps=2, grid=False, write=True, filename='P9'):
     """create a video from simulated field images
 
     Args:
@@ -555,7 +556,9 @@ def planet9_movie(nimage=4, fps=2, grid=False, write=False, filename='P9'):
     # render frames
     frames_pbar = tqdm(desc='Iterating frames', total=nimage, unit='operation', leave=False)
     for i in range(nimage):
-        frame_render(source_data, x, y, [p9_x[i], p9_y[i]], grid, write, i, frames_pbar)
+        global it_num
+        it_num = i
+        frame_render(source_data, x, y, [p9_x[i], p9_y[i]], grid, write, frames_pbar)
         pbar.update(1)
     frames_pbar.close()
 
