@@ -34,18 +34,12 @@ All of Thacher Astronomy's tools for searching for planet 9 are in this reposito
 ### [gridder.py](https://github.com/ThacherObservatory/planet9/gridder.py)
 *description here*
 
-| Functions | Arguments | Returns | Notes
-| -------- | -------- | -------- | -------- |
 ### [make_stacked_image.py](https://github.com/ThacherObservatory/planet9/make_stacked_image.py)
 *description here*
 
-| Functions | Arguments | Returns | Notes
-| -------- | -------- | -------- | -------- |
 ### [make_test_ims.py](https://github.com/ThacherObservatory/planet9/make_test_ims.py)
 *description here*
 
-| Functions | Arguments | Returns | Notes
-| -------- | -------- | -------- | -------- |
 ### [pandastarrs.py](https://github.com/ThacherObservatory/planet9/pandastarrs.py)
 Apparatus for extracting information from tables of PanSTARRS data.
 
@@ -57,35 +51,17 @@ Apparatus for extracting information from tables of PanSTARRS data.
 ### [planet9_movement.py](https://github.com/ThacherObservatory/planet9/planet9_movement.py)
 *description here*
 
-| Functions | Arguments | Returns | Notes
-| -------- | -------- | -------- | -------- |
-
 ### [planet9_reduction.py](https://github.com/ThacherObservatory/planet9/planet9_reduction.py)
 Nick Edwards:
 > it takes p9 images and subtracts the background and hcongrid stuff
-
-| Functions | Arguments | Returns | Notes
-| -------- | -------- | -------- | -------- |
 
 ### [planet9_sim.py](https://github.com/ThacherObservatory/planet9/planet9_sim.py)
 Nick Edwards:
 > it simulates p9 fields and makes movies
 
-| Functions | Arguments | Returns | Notes
-| -------- | -------- | -------- | -------- |
-
 ### [seeker.py](https://github.com/ThacherObservatory/planet9/seeker.py)
 Nick Edwards:
 > `seeker.py` is for automatically finding planet 9 and is unfinished
 
-| Functions | Arguments | Returns | Notes
-| -------- | -------- | -------- | -------- |
-
 ### [trylegal.py](https://github.com/ThacherObservatory/planet9/trylegal.py)
 Apparatus for extracting information from tables of TRILEGAL data.
-
-| Functions | Arguments | Returns | Notes
-| -------- | -------- | -------- | -------- |
-|`load_info`||PANDAS dataframe|read TRILEGAL data into memory (defaults to `./data/TRILEGAL.table`)|
-|`info_col`|string `column`| PANDAS dataframe|extracts only a particular column and its data from the TRILEGAL datatable
-|`info_len`||`len` of data table|used to calculate the total number of entries in the TRILEGAL datafile|

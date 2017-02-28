@@ -350,8 +350,10 @@ def plot_field(image, grid=False, write=False):
     plt.gca().invert_yaxis()
     pbar.update(1)
     if write:
-        plt.savefig("stars.png", dpi=300)
+        fname = 'p9_stars%02d.png' % it_num
+        plt.savefig(fname, dpi=300)
         pbar.update(1)
+        pbar.write('		Frame saved as image.')
     pbar.write('		Plot rendered.')
     pbar.close()
 
@@ -371,7 +373,7 @@ def slice_plot(image):
     plt.plot(slice)
 
 
-def make_field(source_data, x, y, background, p9pos, oversamp=oversamp, plot=False, grid=False, write=False):
+def make_field(source_data, x, y, background, p9pos, oversamp, write, plot=False, grid=False):
     """Make a field of stars with realistic noise properties
 
     Args:
@@ -463,9 +465,10 @@ def make_field(source_data, x, y, background, p9pos, oversamp=oversamp, plot=Fal
 
     # render image and save it
     if write:
-        fname = 'p9_image%02d.fits' % it_num
-        fits.writeto('stars.fits', image, clobber=True)
+        fname = 'p9_frame%02d.fits' % it_num
+        fits.writeto(fname, image, overwrite=True)
         pbar.update(1)
+        pbar.write('		Frame saved as FITS.')
 
     if plot:
         plot_field(image, grid, write)
@@ -476,8 +479,12 @@ def make_field(source_data, x, y, background, p9pos, oversamp=oversamp, plot=Fal
     return image
 
 
-def planet9_path(nimage):
+def planet9_path(nimage, oversamp):
     """Generate planet 9 coordinates
+
+    Args:
+        nimage
+        oversamp
 
     Variables:
         t (array):              array of position for planet 9 throughout frames
@@ -492,7 +499,7 @@ def planet9_path(nimage):
     return p9_x, p9_y
 
 
-def frame_render(source_data, x, y, p9pos, grid, write, pbar):
+def frame_render(source_data, x, y, p9pos, oversamp, grid, write, pbar):
     """Render a single frame of simulated noise and data, plus planet 9 and save it
 
     Args:
@@ -508,9 +515,9 @@ def frame_render(source_data, x, y, p9pos, grid, write, pbar):
         fname (str):            filename format for image frames
     """
     pbar.write('	Rendering frame %d...' % (it_num + 1))
-    image = make_field(source_data, x, y, background, p9pos, write)
+    image = make_field(source_data, x, y, background, p9pos, oversamp, write)
 
-    fname = 'p9_image%02d.png' % it_num
+    fname = 'p9_frame%02d.png' % it_num
 
     # grid attempt
     plot_field(image, grid, write)
@@ -549,7 +556,7 @@ def planet9_movie(nimage=4, fps=2, grid=False, write=True, filename='P9'):
     pbar.write('TRILEGAL data loaded.')
     pbar.update(1)
 
-    p9_x, p9_y = planet9_path(nimage)
+    p9_x, p9_y = planet9_path(nimage, oversamp)
     x, y = distribute_oversamp()
     pbar.update(1)
 
@@ -558,7 +565,7 @@ def planet9_movie(nimage=4, fps=2, grid=False, write=True, filename='P9'):
     for i in range(nimage):
         global it_num
         it_num = i
-        frame_render(source_data, x, y, [p9_x[i], p9_y[i]], grid, write, frames_pbar)
+        frame_render(source_data, x, y, [p9_x[i], p9_y[i]], oversamp, grid, write, frames_pbar)
         pbar.update(1)
     frames_pbar.close()
 
@@ -568,14 +575,14 @@ def planet9_movie(nimage=4, fps=2, grid=False, write=True, filename='P9'):
     pbar.write('Previous movie file deleted.')
 
     # export new movie with FFmpeg
-    os.system("ffmpeg -loglevel quiet -r " + str(fps) + " -i p9_image%02d.png" +
+    os.system("ffmpeg -loglevel quiet -r " + str(fps) + " -i p9_frame%02d.png" +
               " -b:v 20M -vcodec libx264 -pix_fmt yuv420p -s 808x764 " +
               filename + ".mp4")
     pbar.write('Movie exported.')
     pbar.update(1)
 
     # delete frame images
-    for f in glob.glob("p9_image??.png"):
+    for f in glob.glob("p9_frame??.png"):
         os.remove(f)
     pbar.write('Frame images deleted.')
     pbar.update(1)
