@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
@@ -8,6 +9,8 @@ from rebin import rebin
 import pdb
 import os
 import sys
+import subprocess
+from subprocess import call
 import gc
 import glob
 import robust as rb
@@ -74,7 +77,7 @@ readnoise = 20
 background = 21.3
 mzp = 22.5
 seeing = 3.0
-width = 10.0
+width = 3.0
 
 # Planet 9 variables
 angle = 225.0
@@ -312,67 +315,6 @@ def add_source(starframe, sourceframe, loc, mag):
     return starframe
 
 
-def plot_field(image, grid=False, write=False):
-    """generates a plot to display the simulated field image
-
-    Args:
-        image (array):          array to store simulated image data
-        siglo (float):          ???
-        sighi (float):          ???
-        grid (bool):            whether or not to overlay a grid
-        write (bool):           whether or not to save the chart as an image file
-    """
-    # progress bar
-    tasks = 2
-    if grid:
-        tasks += 1
-    if write:
-        tasks += 1
-    pbar = tqdm(desc='Plotting image', total=tasks, unit='operation', leave=False)
-    pbar.write('		Plotting frame...')
-
-    # Make a plot
-    if stretch == 'sqrt':
-        image = np.sqrt(image)
-    med = np.median(image)
-    sig = rb.std(image)
-    plt.ion()
-    plt.figure(1)
-    plt.clf()
-    plt.imshow(image, vmin=med - siglo * sig, vmax=med +
-               sighi * sig, cmap='gray', interpolation='none')
-    pbar.update(1)
-
-    if grid:
-        plt.rc('grid', linestyle='-', color='white')
-        plt.grid(which='both')
-        pbar.update(1)
-    plt.gca().invert_yaxis()
-    pbar.update(1)
-    if write:
-        fname = 'p9_stars%02d.png' % it_num
-        plt.savefig(fname, dpi=300)
-        pbar.update(1)
-        pbar.write('		Frame saved as image.')
-    pbar.write('		Plot rendered.')
-    pbar.close()
-
-
-def slice_plot(image):
-    """Show a cross section of the star in the image
-
-    Args:
-        image (array):          array to store simulated image data
-    """
-    xsize = np.shape(image)[0]
-    slice = image[xsize // 2, :]
-    plt.ion()
-    plt.figure(2)
-    plt.clf()
-    plt.xlim(xsize)
-    plt.plot(slice)
-
-
 def make_field(source_data, x, y, background, p9pos, oversamp, write, plot=False, grid=False):
     """Make a field of stars with realistic noise properties
 
@@ -479,6 +421,67 @@ def make_field(source_data, x, y, background, p9pos, oversamp, write, plot=False
     return image
 
 
+def plot_field(image, grid=False, write=False):
+    """generates a plot to display the simulated field image
+
+    Args:
+        image (array):          array to store simulated image data
+        siglo (float):          ???
+        sighi (float):          ???
+        grid (bool):            whether or not to overlay a grid
+        write (bool):           whether or not to save the chart as an image file
+    """
+    # progress bar
+    tasks = 2
+    if grid:
+        tasks += 1
+    if write:
+        tasks += 1
+    pbar = tqdm(desc='Plotting image', total=tasks, unit='operation', leave=False)
+    pbar.write('		Plotting frame...')
+
+    # Make a plot
+    if stretch == 'sqrt':
+        image = np.sqrt(image)
+    med = np.median(image)
+    sig = rb.std(image)
+    plt.ion()
+    plt.figure(1)
+    plt.clf()
+    plt.imshow(image, vmin=med - siglo * sig, vmax=med +
+               sighi * sig, cmap='gray', interpolation='none')
+    pbar.update(1)
+
+    if grid:
+        plt.rc('grid', linestyle='-', color='white')
+        plt.grid(which='both')
+        pbar.update(1)
+    plt.gca().invert_yaxis()
+    pbar.update(1)
+    if write:
+        fname = 'p9_stars%02d.png' % it_num
+        plt.savefig(fname, dpi=300)
+        pbar.update(1)
+        pbar.write('		Frame saved as image.')
+    pbar.write('		Plot rendered.')
+    pbar.close()
+
+
+def slice_plot(image):
+    """Show a cross section of the star in the image
+
+    Args:
+        image (array):          array to store simulated image data
+    """
+    xsize = np.shape(image)[0]
+    slice = image[xsize // 2, :]
+    plt.ion()
+    plt.figure(2)
+    plt.clf()
+    plt.xlim(xsize)
+    plt.plot(slice)
+
+
 def planet9_path(nimage, oversamp):
     """Generate planet 9 coordinates
 
@@ -523,7 +526,10 @@ def frame_render(source_data, x, y, p9pos, oversamp, grid, write, pbar):
     plot_field(image, grid, write)
     plt.savefig(fname, bbox_inches='tight', transparent=True, pad_inches=0, frameon=False,
                 dpi=150)
-    os.system("convert " + fname + " -background black -flatten +matte " + fname)
+    convert = subprocess.Popen(["convert", fname, "-background", "black",
+                                "-flatten", "+matte", fname], stdout=subprocess.PIPE)
+    if convert.communicate()[0]:
+        pbar.write(convert.communicate()[0])
     pbar.update(1)
     pbar.write('	Frame %d rendered.' % (it_num + 1))
 
@@ -548,7 +554,10 @@ def planet9_movie(nimage=4, fps=2, grid=False, write=True, filename='P9'):
         frames_pbar (tqdm):     progress bar for generating frames
     """
     # proress bar
-    pbar = tqdm(desc='Simulation progress', total=(nimage + 5), unit='operation')
+    tasks = nimage + 4
+    if os.path.exists(filename + ".mp4"):
+        tasks += 1
+    pbar = tqdm(desc='Simulation progress', total=tasks, unit='operation')
 
     # initialize persistent data
     pbar.write('Loading TRILEGAL data...')
@@ -570,16 +579,20 @@ def planet9_movie(nimage=4, fps=2, grid=False, write=True, filename='P9'):
     frames_pbar.close()
 
     # remove previous movie
-    os.remove(filename + ".mp4")
-    pbar.update(1)
-    pbar.write('Previous movie file deleted.')
+    if os.path.exists(filename + ".mp4"):
+        os.remove(filename + ".mp4")
+        pbar.update(1)
+        pbar.write('Previous movie file deleted.')
 
     # export new movie with FFmpeg
-    os.system("ffmpeg -loglevel quiet -r " + str(fps) + " -i p9_frame%02d.png" +
-              " -b:v 20M -vcodec libx264 -pix_fmt yuv420p -s 808x764 " +
-              filename + ".mp4")
-    pbar.write('Movie exported.')
-    pbar.update(1)
+    ffmpeg = subprocess.Popen(["ffmpeg", "-loglevel", "quiet", "-r", str(fps), "-i", "p9_frame%02d.png",
+                               "-b:v", "20M", "-vcodec", "libx264", "-pix_fmt", "yuv420p", "-s", "2048x2048", filename + ".mp4"], stdout=subprocess.PIPE)
+
+    if ffmpeg.communicate()[0]:
+        pbar.write(ffmpeg.communicate()[0])
+    else:
+        pbar.write('Movie exported.')
+        pbar.update(1)
 
     # delete frame images
     for f in glob.glob("p9_frame??.png"):
@@ -594,4 +607,6 @@ def planet9_movie(nimage=4, fps=2, grid=False, write=True, filename='P9'):
 
 # run
 if __name__ == '__main__':
+    print('Beginning simulation...')
     planet9_movie()
+    print('Simulation complete.')
