@@ -58,7 +58,7 @@ starframe (array):      array to store simulated image data
 """
 
 # Image frame settings
-size = int(2048)
+size = 2048
 
 # Rendering settings
 oversamp = 10
