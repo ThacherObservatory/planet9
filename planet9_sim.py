@@ -77,12 +77,12 @@ readnoise = 20
 background = 21.3
 mzp = 22.5
 seeing = 3.0
-width = 3.0
+width = 5
 
 # Planet 9 variables
 angle = 225.0
 dpos = 30.0
-p9mag = 21.0
+p9mag = 22.0
 p9pos = [1024, 1024]
 
 
@@ -526,7 +526,7 @@ def frame_render(source_data, x, y, p9pos, oversamp, grid, write, pbar):
     plot_field(image, grid, write)
     plt.savefig(fname, bbox_inches='tight', transparent=True, pad_inches=0, frameon=False,
                 dpi=150)
-    convert = subprocess.Popen(["convert", fname, "-background", "black",
+    convert = subprocess.Popen(["magick", "convert", fname, "-background", "black",
                                 "-flatten", "+matte", fname], stdout=subprocess.PIPE)
     if convert.communicate()[0]:
         pbar.write(convert.communicate()[0])
@@ -586,7 +586,7 @@ def planet9_movie(nimage=4, fps=2, grid=False, write=True, filename='P9'):
 
     # export new movie with FFmpeg
     ffmpeg = subprocess.Popen(["ffmpeg", "-loglevel", "quiet", "-r", str(fps), "-i", "p9_frame%02d.png",
-                               "-b:v", "20M", "-vcodec", "libx264", "-pix_fmt", "yuv420p", "-s", "2048x2048", filename + ".mp4"], stdout=subprocess.PIPE)
+                               "-b:v", "20M", "-vcodec", "libx264", "-pix_fmt", "yuv420p", "-s", "808x764", filename + ".mp4"], stdout=subprocess.PIPE)
 
     if ffmpeg.communicate()[0]:
         pbar.write(ffmpeg.communicate()[0])
